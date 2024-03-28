@@ -54,7 +54,7 @@ u850_norm = normalization(u850)
 v850_norm = normalization(v850)
 
 # bsiso index (eEOF) 読み込み
-data_file = '/content/drive/MyDrive/bsiso_cnn/bsiso_filterd_index.dat'
+data_file = '/home/maeda/archive/kikuchi_bsiso_index.dat'
 
 year    = np.loadtxt(data_file, usecols = 0, dtype = int)
 month   = np.loadtxt(data_file, usecols = 1, dtype = int)
