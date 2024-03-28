@@ -20,7 +20,7 @@ import pandas as pd
 
 
 df1 = np.load('/home/maeda/archive/NOAA/olr_lanczosbp.npz')
-df2 = np.load('archive/ncep_reanalysis2/daily/wind/lanczosbp_w850.npz')
+df2 = np.load('/home/maeda/archive/ncep_reanalysis2/daily/wind/lanczosbp_w850.npz')
 
 lat = df1['lat']
 lon = df1['lon']
