@@ -10,7 +10,6 @@ from keras.layers import Dense, Dropout, Activation, Flatten
 from keras.layers import Conv2D, MaxPooling2D, BatchNormalization, LayerNormalization
 from keras.callbacks import EarlyStopping
 from keras.optimizers import Adam
-from keras.optimizers import RMSprop
 from keras.regularizers import l2
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
@@ -139,16 +138,16 @@ model = Sequential()
 # 入力画像　25×144×3 ：(緯度方向の格子点数)×(軽度方向の格子点数)×(チャンネル数、OLRのラグ)
 model.add(Conv2D(32, (2, 2), padding='same', input_shape=(30, 50, 8), strides=(2,2) ))   # ゼロパディング、バッチサイズ以外の画像の形状を指定 25*144*1 -> 25*144*8
 model.add(LayerNormalization())
-model.add(Activation('leaky_relu'))                                             # 活性化関数
+model.add(Activation('relu'))                                             # 活性化関数
 #model.add(MaxPooling2D(pool_size=(2, 2)))                                 # 21*140*16 -> 10*70*16
 model.add(Conv2D(64, (2, 2), padding='same', strides=(2,2)))                                             # 25*144*8 -> 21*140*16
 model.add(LayerNormalization())
-model.add(Activation('leaky_relu'))
+model.add(Activation('relu'))
 #model.add(MaxPooling2D(pool_size=(2, 2)))                                 # 21*140*16 -> 10*70*16
 
 model.add(Conv2D(64, (2, 2), padding='same', strides=(2,2)))                             # 10*70*16 -> 10*70*32
 model.add(LayerNormalization())
-model.add(Activation('leaky_relu'))
+model.add(Activation('relu'))
 
 model.add(Flatten())  # 一次元の配列に変換                                # 1*16*64 -> 1024
 #model.add(Dense(1024))
