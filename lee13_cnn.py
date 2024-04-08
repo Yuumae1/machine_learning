@@ -90,9 +90,9 @@ print(sup_data.shape)
 # 入力データの前処理
 def preprocess(data):
   # np.roll は前方に要素をシフトさせるが、末端部分は巡回していることに注意する
-  ipt_lag0   = np.roll(data, lead_time, axis=0)
+  ipt_lag0   = np.roll(data, -lead_time, axis=0)
   #ipt_lag5   = np.roll(data, lead_time+5, axis=0)
-  ipt_lag10  = np.roll(data, lead_time+10, axis=0)
+  ipt_lag10  = np.roll(data, -lead_time-10, axis=0)
   # =========
   # 訓練データの作成(mjjaso)
   idx = np.where((rt.month >= 5) & (rt.month <= 10) & (rt.year <= 2015))[0]
