@@ -60,10 +60,11 @@ print(time3[0], time3[-1])
 # 標準化処理
 def normalization(data):
   data_std  = np.std(data, axis=0)
-  data_norm = data / data_std
+  data_mean = np.mean(data, axis=0)
+  data_norm = (data-data_mean) / data_std
   print('Raw Data        = ', data.max(), data.min())
   print('Normalized Data = ', data_norm.max(), data_norm.min())
-  del data_std
+  del data_std, data_mean
   return data_norm
 
 olr1_norm = normalization(olr1)
