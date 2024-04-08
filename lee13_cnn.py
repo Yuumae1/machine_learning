@@ -19,7 +19,7 @@ import pandas as pd
 
 
 # データの読み込み
-data1 = np.load('/home/maeda/data/bsiso_lee13/rcnst_eof.npz')
+data1 = np.load('/home/maeda/data/bsiso_lee13/lee13_rcnst.npz')
 data2 = np.load('/home/maeda/data/bsiso_lee13/lee13_mveof.npz')
 data3 = np.load('/home/maeda/data/bsiso_lee13/lee13_mveof_allperiod.npz')
 data4 = np.load('/home/maeda/data/bsiso_lee13/pr_wtr.npz')
