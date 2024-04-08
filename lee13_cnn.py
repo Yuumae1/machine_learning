@@ -97,7 +97,7 @@ def preprocess(data):
 
   # =========
   # 訓練データの作成
-  idx = np.where((rt.mm >= 5) & (rt.mm <= 10) & (rt.yy <= 2015))[0]
+  idx = np.where((rt.month >= 5) & (rt.month <= 10) & (rt.year <= 2015))[0]
   ipt_lag0_train = ipt_lag0[idx]
   ipt_lag5_train = ipt_lag5[idx]
   ipt_lag10_train = ipt_lag10[idx]
@@ -105,7 +105,7 @@ def preprocess(data):
   ipt_train = np.stack([ipt_lag0_train, ipt_lag5_train, ipt_lag10_train], 3)
 
   # 検証データの作成
-  idx = np.where((rt.mm >= 5) & (rt.mm <= 10) & (rt.yy > 2015))[0]
+  idx = np.where((rt.month >= 5) & (rt.month <= 10) & (rt.year > 2015))[0]
   ipt_lag0_test = ipt_lag0[idx]
   ipt_lag5_test = ipt_lag5[idx]
   ipt_lag10_test = ipt_lag10[idx]
@@ -129,9 +129,9 @@ ipt_test  = np.concatenate([olr1_ipt_test, olr2_ipt_test, u8501_ipt_test, u8502_
 #ipt_train, ipt_test = v850_ipt_train, v850_ipt_test
 
 # その他のインデクシング
-idx = np.where((rt.mm >= 5) & (rt.mm <= 10) & (rt.yy <= 2015))[0]
+idx = np.where((rt.month >= 5) & (rt.month <= 10) & (rt.year <= 2015))[0]
 sup_train = sup_data[idx]
-idx = np.where((rt.mm >= 5) & (rt.mm <= 10) & (rt.yy > 2015))[0]
+idx = np.where((rt.month >= 5) & (rt.month <= 10) & (rt.year > 2015))[0]
 sup_test = sup_data[idx]
 rt = rt[idx]
 print(sup_test.shape, sup_train.shape, ipt_test.shape, ipt_train.shape, rt.shape)
