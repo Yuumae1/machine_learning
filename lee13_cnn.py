@@ -23,6 +23,7 @@ data1 = np.load('/home/maeda/data/bsiso_lee13/rcnst_eof.npz')
 data2 = np.load('/home/maeda/data/bsiso_lee13/lee13_mveof.npz')
 data3 = np.load('/home/maeda/data/bsiso_lee13/lee13_mveof_allperiod.npz')
 data4 = np.load('/home/maeda/data/bsiso_lee13/pr_wtr.npz')
+data_time = np.load('/home/maeda/data/bsiso_lee13/preprocessed_data_danomaly.npz')
 print(data1.files)
 print(data2.files)
 print(data4.files)
@@ -41,7 +42,7 @@ u8502 = data1['u8502']
 h8501 = data1['h8501']
 h8502 = data1['h8502']
 #pr_wtr = data4['data_anom_rm'][:-365,20:50,16:66]
-time = data3['time']
+time = data_time['time']
 real_time = pd.to_datetime(time, unit='h', origin=pd.Timestamp('1800-01-01')) # 時刻をdatetime型に変換
 print(lat.shape, lon.shape, olr1.shape, time.shape, real_time.shape, u8501.shape, h8501.shape)
 print(real_time[0], real_time[-1])
