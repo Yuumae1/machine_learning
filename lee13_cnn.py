@@ -47,8 +47,8 @@ print(lat.shape, lon.shape, olr1.shape, time.shape, real_time.shape, u8501.shape
 print(real_time[0], real_time[-1])
 
 # bsiso index (MVEOF) 読み込み
-PC1 = data2['PCs'][:,0]
-PC2 = data2['PCs'][:,1]
+PC1 = data3['PCs'][:,0]
+PC2 = data3['PCs'][:,1]
 PCs = np.stack([PC1, -PC2], axis=1)
 #phase = data2['phase']
 time3 = data3['time']
@@ -84,29 +84,33 @@ print('output shape = ', output_shape)
 
 #ph = phase
 rt = real_time
-sup_data = PCs
+# 教師データを前進
+sup_data = PCs[10+lead_time:]
 print(sup_data.shape)
 
 # 入力データの前処理
+
 def preprocess(data):
-  # np.roll は前方に要素をシフトさせるが、末端部分は巡回していることに注意する
-  ipt_lag0   = np.roll(data, -lead_time, axis=0)
-  #ipt_lag5   = np.roll(data, lead_time+5, axis=0)
-  ipt_lag10  = np.roll(data, -lead_time-10, axis=0)
+  ipt_lag0  = data[10:-lead_time-1]
+  ipt_lag5  = data[5:-lead_time-6]
+  ipt_lag10 = data[:-lead_time-11]
+
   # =========
-  # 訓練データの作成(mjjaso)
-  idx = np.where((rt.month >= 5) & (rt.month <= 10) & (rt.year <= 2015))[0]
-  ipt_train_lag0 = ipt_lag0[idx]
-  #ipt_train_lag5 = ipt_lag5[idx]
-  ipt_train_lag10 = ipt_lag10[idx]
-  ipt_train = np.stack([ipt_train_lag0, ipt_train_lag10],axis=3)
+  # 訓練データの作成
+  idx = np.where((rt.mm >= 5) & (rt.mm <= 10) & (rt.yy <= 2015))[0]
+  ipt_lag0_train = ipt_lag0[idx]
+  ipt_lag5_train = ipt_lag5[idx]
+  ipt_lag10_train = ipt_lag10[idx]
+  #ipt_train = np.concatenate([ipt_lag0_train, ipt_lag5_train, ipt_lag10_train], 1)
+  ipt_train = np.stack([ipt_lag0_train, ipt_lag5_train, ipt_lag10_train], 3)
 
   # 検証データの作成
-  idx = np.where((rt.month >= 5) & (rt.month <= 10) & (rt.year > 2015))[0]
-  ipt_test_lag0 = ipt_lag0[idx]
-  #ipt_test_lag5 = ipt_lag5[idx]
-  ipt_test_lag10 = ipt_lag10[idx]
-  ipt_test = np.stack([ipt_test_lag0, ipt_test_lag10], axis=3)
+  idx = np.where((rt.mm >= 5) & (rt.mm <= 10) & (rt.yy > 2015))[0]
+  ipt_lag0_test = ipt_lag0[idx]
+  ipt_lag5_test = ipt_lag5[idx]
+  ipt_lag10_test = ipt_lag10[idx]
+  #ipt_test = np.concatenate([ipt_lag0_test, ipt_lag5_test, ipt_lag10_test], 1)
+  ipt_test = np.stack([ipt_lag0_test, ipt_lag5_test, ipt_lag10_test], 3)
   return ipt_train, ipt_test
 
 olr1_ipt_train, olr1_ipt_test = preprocess(olr1_norm)
@@ -125,9 +129,10 @@ ipt_test  = np.concatenate([olr1_ipt_test, olr2_ipt_test, u8501_ipt_test, u8502_
 #ipt_train, ipt_test = v850_ipt_train, v850_ipt_test
 
 # その他のインデクシング
-sup_train = sup_data[:6808,:2]
-sup_test = sup_data[6808:, :2]
-idx = np.where((rt.month >= 5) & (rt.month <= 10) & (rt.year > 2015))[0]
+idx = np.where((rt.mm >= 5) & (rt.mm <= 10) & (rt.yy <= 2015))[0]
+sup_train = sup_data[idx]
+idx = np.where((rt.mm >= 5) & (rt.mm <= 10) & (rt.yy > 2015))[0]
+sup_test = sup_data[idx]
 rt = rt[idx]
 print(sup_test.shape, sup_train.shape, ipt_test.shape, ipt_train.shape, rt.shape)
 del olr1_ipt_train, olr2_ipt_train, u8501_ipt_train, u8502_ipt_train, h8501_ipt_train, h8502_ipt_train
@@ -136,7 +141,7 @@ del olr1_ipt_train, olr2_ipt_train, u8501_ipt_train, u8502_ipt_train, h8501_ipt_
 # CNNモデルの構築 #0.4
 model = Sequential()
 # 入力画像　25×144×3 ：(緯度方向の格子点数)×(軽度方向の格子点数)×(チャンネル数、OLRのラグ)
-model.add(Conv2D(32, (2, 2), padding='same', input_shape=(21, 49, 12), strides=(2,2) ))   # ゼロパディング、バッチサイズ以外の画像の形状を指定 25*144*1 -> 25*144*8
+model.add(Conv2D(32, (2, 2), padding='same', input_shape=(21, 49, 18), strides=(2,2) ))   # ゼロパディング、バッチサイズ以外の画像の形状を指定 25*144*1 -> 25*144*8
 model.add(LayerNormalization())
 model.add(Activation('relu'))                                             # 活性化関数
 #model.add(MaxPooling2D(pool_size=(2, 2)))                                 # 21*140*16 -> 10*70*16
