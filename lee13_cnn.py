@@ -27,20 +27,23 @@ print(data1.files)
 print(data2.files)
 print(data4.files)
 
-lat = data1['lat'][20:42]
-lon = data1['lon'][16:66]
+lat = data2['lat'][20:42]
+lon = data2['lon'][16:66]
 #olr = data1['olr'][:,20:42,16:66]
 #u850 = data1['u850'][:,20:42,16:66]
 #v850 = data1['v850'][:,20:42,16:66]
 #h850 = data1['h850'][:,20:42,16:66]
-olr = data1['olr'][:,20:50,16:66]
-u850 = data1['u850'][:,20:50,16:66]
+olr1 = data1['olr1']
+olr2 = data1['olr2']
+u8501 = data1['u8501']
+u8502 = data1['u8502']
 #v850 = data1['v850'][:,20:50,:]
-h850 = data1['h850'][:,20:50,16:66]
+h8501 = data1['h8501']
+h8502 = data1['h8502']
 #pr_wtr = data4['data_anom_rm'][:-365,20:50,16:66]
 time = data1['time']
 real_time = pd.to_datetime(time, unit='h', origin=pd.Timestamp('1800-01-01')) # 時刻をdatetime型に変換
-print(lat.shape, lon.shape, olr.shape, time.shape, real_time.shape, u850.shape, h850.shape)
+print(lat.shape, lon.shape, olr1.shape, time.shape, real_time.shape, u8501.shape, h850.shape)
 print(real_time[0], real_time[-1])
 
 # bsiso index (MVEOF) 読み込み
@@ -63,12 +66,15 @@ def normalization(data):
   del data_std
   return data_norm
 
-olr_norm = normalization(olr)
-u850_norm = normalization(u850)
+olr1_norm = normalization(olr1)
+olr2_norm = normalization(olr2)
+u8501_norm = normalization(u8501)
+u8502_norm = normalization(u8502)
 #v850_norm = normalization(v850)
-h850_norm = normalization(h850)
+h8501_norm = normalization(h8501)
+h8502_norm = normalization(h8502)
 #pr_wtr_norm = normalization(pr_wtr)
-del olr, u850, h850
+del olr1, olr2, u8501, u8502, h8501, h8502
 
 # initial の気象場を後ろにずらして予測問題を解くため、気象場の方をずらした後にインデクシングする
 lead_time = 10
@@ -85,7 +91,7 @@ print(sup_data.shape)
 def preprocess(data):
   # np.roll は前方に要素をシフトさせるが、末端部分は巡回していることに注意する
   ipt_lag0   = np.roll(data, lead_time, axis=0)
-  ipt_lag5   = np.roll(data, lead_time+5, axis=0)
+  #ipt_lag5   = np.roll(data, lead_time+5, axis=0)
   ipt_lag10  = np.roll(data, lead_time+10, axis=0)
   # =========
   # 訓練データの作成(mjjaso)
@@ -103,14 +109,19 @@ def preprocess(data):
   ipt_test = np.stack([ipt_test_lag0, ipt_test_lag10], axis=3)
   return ipt_train, ipt_test
 
-olr_ipt_train, olr_ipt_test = preprocess(olr_norm)
-u850_ipt_train, u850_ipt_test = preprocess(u850_norm)
+olr1_ipt_train, olr1_ipt_test = preprocess(olr1_norm)
+olr2_ipt_train, olr2_ipt_test = preprocess(olr2_norm)
+u8501_ipt_train, u8501_ipt_test = preprocess(u8501_norm)
+u8502_ipt_train, u8502_ipt_test = preprocess(u8502_norm)
 #v850_ipt_train, v850_ipt_test = preprocess(v850_norm)
-h850_ipt_train, h850_ipt_test = preprocess(h850_norm)
-pr_wtr_ipt_train, pr_wtr_ipt_test = preprocess(pr_wtr_norm)
+h8501_ipt_train, h8501_ipt_test = preprocess(h8501_norm)
+h8502_ipt_train, h8502_ipt_test = preprocess(h8502_norm)
+#pr_wtr_ipt_train, pr_wtr_ipt_test = preprocess(pr_wtr_norm)
 
-ipt_train = np.concatenate([olr_ipt_train, u850_ipt_train, h850_ipt_train, pr_wtr_ipt_train], 3)
-ipt_test  = np.concatenate([olr_ipt_test, u850_ipt_test, h850_ipt_test, pr_wtr_ipt_test], 3)
+ipt_train = np.concatenate([olr1_ipt_train, olr2_ipt_train, u8501_ipt_train, u8502_ipt_train, 
+                            h8501_ipt_train, h8502_ipt_train], 3)
+ipt_test  = np.concatenate([olr1_ipt_test, olr2_ipt_test, u8501_ipt_test, u8502_ipt_test,
+                            h8501_ipt_test, h8501_ipt_test], 3)
 #ipt_train, ipt_test = v850_ipt_train, v850_ipt_test
 
 # その他のインデクシング
@@ -119,7 +130,7 @@ sup_test = sup_data[6808:, :2]
 idx = np.where((rt.month >= 5) & (rt.month <= 10) & (rt.year > 2015))[0]
 rt = rt[idx]
 print(sup_test.shape, sup_train.shape, ipt_test.shape, ipt_train.shape, rt.shape)
-del olr_ipt_train, olr_ipt_test, u850_ipt_train, u850_ipt_test
+del olr1_ipt_train, olr2_ipt_train, u8501_ipt_train, u8502_ipt_train, h8501_ipt_train, h8502_ipt_train
 # (1268, 2) (6808, 2) (1288, 22, 50, 12) (6808, 22, 50, 12)
 
 # CNNモデルの構築 #0.4
