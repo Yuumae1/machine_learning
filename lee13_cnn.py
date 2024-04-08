@@ -19,10 +19,10 @@ import pandas as pd
 
 
 # データの読み込み
-data1 = np.load('/content/drive/MyDrive/data/bsiso_lee+/preprocessed_data_danomaly.npz')
-data2 = np.load('/content/drive/MyDrive/data/bsiso_lee+/lee13_mveof.npz')
-data3 = np.load('/content/drive/MyDrive/data/bsiso_lee+/lee13_mveof_allperiod.npz')
-data4 = np.load('/content/drive/MyDrive/data/bsiso_lee+/pr_wtr.npz')
+data1 = np.load('/home/maeda/data/bsiso_lee13/rcnst_eof.npz')
+data2 = np.load('/home/maeda/data/bsiso_lee13/lee13_mveof.npz')
+data3 = np.load('/home/maeda/data/bsiso_lee13/lee13_mveof_allperiod.npz')
+data4 = np.load('/home/maeda/data/bsiso_lee13/pr_wtr.npz')
 print(data1.files)
 print(data2.files)
 print(data4.files)
@@ -37,12 +37,11 @@ olr = data1['olr'][:,20:50,16:66]
 u850 = data1['u850'][:,20:50,16:66]
 #v850 = data1['v850'][:,20:50,:]
 h850 = data1['h850'][:,20:50,16:66]
-pr_wtr = data4['data_anom_rm'][:-365,20:50,16:66]
+#pr_wtr = data4['data_anom_rm'][:-365,20:50,16:66]
 time = data1['time']
 real_time = pd.to_datetime(time, unit='h', origin=pd.Timestamp('1800-01-01')) # 時刻をdatetime型に変換
 print(lat.shape, lon.shape, olr.shape, time.shape, real_time.shape, u850.shape, h850.shape)
 print(real_time[0], real_time[-1])
-print(pr_wtr.shape)
 
 # bsiso index (MVEOF) 読み込み
 PC1 = data2['PCs'][:,0]
@@ -68,7 +67,7 @@ olr_norm = normalization(olr)
 u850_norm = normalization(u850)
 #v850_norm = normalization(v850)
 h850_norm = normalization(h850)
-pr_wtr_norm = normalization(pr_wtr)
+#pr_wtr_norm = normalization(pr_wtr)
 del olr, u850, h850
 
 # initial の気象場を後ろにずらして予測問題を解くため、気象場の方をずらした後にインデクシングする
@@ -160,7 +159,7 @@ history = model.fit(ipt_train, sup_train, epochs=100, batch_size=128, validation
 predict = model.predict(ipt_test, batch_size=None, verbose=0, steps=None)
 print(predict.shape)
 y_test = sup_test
-np.savez('/content/drive/MyDrive/bsiso_cnn/lee+13/' + str(lead_time) + 'day.npz', predict, y_test)
+np.savez('/home/maeda/machine_learning/results/cnn-2d/' + str(lead_time) + 'day.npz', predict, y_test)
 
 # モデルの保存
-model.save('/content/drive/MyDrive/bsiso_cnn/lee+13/' + str(lead_time) + 'day.hdf5')
+model.save('/home/maeda/machine_learning/results/cnn-2d/' + str(lead_time) + 'day.hdf5')
