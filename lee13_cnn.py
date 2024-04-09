@@ -125,9 +125,9 @@ h8501_ipt_train, h8501_ipt_test = preprocess(h8501_norm)
 h8502_ipt_train, h8502_ipt_test = preprocess(h8502_norm)
 #pr_wtr_ipt_train, pr_wtr_ipt_test = preprocess(pr_wtr_norm)
 
-ipt_train = np.concatenate([olr1_ipt_train, olr2_ipt_train, u8501_ipt_train, u8502_ipt_train, 
+ipt_train = np.stack([olr1_ipt_train, olr2_ipt_train, u8501_ipt_train, u8502_ipt_train, 
                             h8501_ipt_train, h8502_ipt_train], 3)
-ipt_test  = np.concatenate([olr1_ipt_test, olr2_ipt_test, u8501_ipt_test, u8502_ipt_test,
+ipt_test  = np.stack([olr1_ipt_test, olr2_ipt_test, u8501_ipt_test, u8502_ipt_test,
                             h8501_ipt_test, h8501_ipt_test], 3)
 #ipt_train, ipt_test = v850_ipt_train, v850_ipt_test
 
