@@ -32,10 +32,10 @@ lon = data2['lon'][16:66]
 #u850 = data1['u850'][:,20:42,16:66]
 #v850 = data1['v850'][:,20:42,16:66]
 #h850 = data1['h850'][:,20:42,16:66]
-olr = data1['olr']
-u850 = data1['u850']
+olr = data1['olr'][20:42]
+u850 = data1['u850'][20:42]
 #v850 = data1['v850'][:,20:50,:]
-h850 = data1['h850']
+h850 = data1['h850'][20:42]
 #pr_wtr = data4['data_anom_rm'][:-365,20:50,16:66]
 time = data1['time']
 real_time = pd.to_datetime(time, unit='h', origin=pd.Timestamp('1800-01-01')) # 時刻をdatetime型に変換
@@ -133,7 +133,7 @@ del olr1_ipt_train, u8501_ipt_train, h8501_ipt_train
 # CNNモデルの構築 #0.4
 model = Sequential()
 # 入力画像　25×144×3 ：(緯度方向の格子点数)×(軽度方向の格子点数)×(チャンネル数、OLRのラグ)
-model.add(Conv2D(32, (2, 2), padding='same', input_shape=(21, 49, 6), strides=(2,2) ))   # ゼロパディング、バッチサイズ以外の画像の形状を指定 25*144*1 -> 25*144*8
+model.add(Conv2D(32, (2, 2), padding='same', input_shape=(21, 144, 3), strides=(2,2) ))   # ゼロパディング、バッチサイズ以外の画像の形状を指定 25*144*1 -> 25*144*8
 model.add(LayerNormalization())
 model.add(Activation('relu'))                                             # 活性化関数
 #model.add(MaxPooling2D(pool_size=(2, 2)))                                 # 21*140*16 -> 10*70*16
