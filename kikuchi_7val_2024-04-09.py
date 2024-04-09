@@ -165,7 +165,7 @@ model.add(LayerNormalization())
 model.add(Activation('relu'))
 #model.add(MaxPooling2D(pool_size=(2, 2)))                                 # 21*140*16 -> 10*70*16
 
-model.add(Conv2D(128, (2, 2), padding='same', strides=(2,2)))                             # 10*70*16 -> 10*70*32
+model.add(Conv2D(64, (2, 2), padding='same', strides=(2,2)))                             # 10*70*16 -> 10*70*32
 model.add(LayerNormalization())
 model.add(Activation('relu'))
 
