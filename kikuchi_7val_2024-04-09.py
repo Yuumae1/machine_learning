@@ -127,8 +127,13 @@ def preprocess(data):
 olr_ipt_train, olr_ipt_test = preprocess(olr_norm)
 u850_ipt_train, u850_ipt_test = preprocess(u850_norm)
 v850_ipt_train, v850_ipt_test = preprocess(v850_norm)
-ipt_train = np.concatenate([olr_ipt_train, u850_ipt_train, v850_ipt_train], 3)
-ipt_test = np.concatenate([olr_ipt_test, u850_ipt_test, v850_ipt_test], 3)
+u200_ipt_train, u200_ipt_test = preprocess(u200_norm)
+v200_ipt_train, v200_ipt_test = preprocess(v200_norm)
+h850_ipt_train, h850_ipt_test = preprocess(h850_norm)
+pr_wtr_ipt_train, pr_wtr_ipt_test = preprocess(pr_wtr_norm)
+
+ipt_train = np.concatenate([olr_ipt_train, u850_ipt_train, v850_ipt_train, u200_ipt_train, v200_ipt_train, h850_ipt_train, pr_wtr_ipt_train], 3)
+ipt_test = np.concatenate([olr_ipt_test, u850_ipt_test, v850_ipt_test, u200_ipt_test, v200_ipt_test, h850_ipt_test, pr_wtr_ipt_test], 3)
 #ipt_train, ipt_test = v850_ipt_train, v850_ipt_test
 
 # その他のインデクシング
@@ -149,7 +154,7 @@ del olr_ipt_train, olr_ipt_test, u850_ipt_train, u850_ipt_test, v850_ipt_train, 
 # CNNモデルの構築
 model = Sequential()
 # 入力画像　25×144×3 ：(緯度方向の格子点数)×(軽度方向の格子点数)×(チャンネル数、OLRのラグ)
-model.add(Conv2D(16, (3, 3), padding='same', input_shape=(25, 144, 9), strides=(2,2) ))   # ゼロパディング、バッチサイズ以外の画像の形状を指定 25*144*1 -> 25*144*8
+model.add(Conv2D(16, (3, 3), padding='same', input_shape=(25, 144, 3*7), strides=(2,2) ))   # ゼロパディング、バッチサイズ以外の画像の形状を指定 25*144*1 -> 25*144*8
 model.add(LayerNormalization())
 model.add(Activation('relu'))                                             # 活性化関数
 #model.add(MaxPooling2D(pool_size=(2, 2)))                                 # 21*140*16 -> 10*70*16
@@ -164,7 +169,7 @@ model.add(Activation('relu'))
 
 #model.add(MaxPooling2D(pool_size=(2, 2)))                                 # 10*70*32 -> 5*35*32
 #model.add(MaxPooling2D(pool_size=(2, 2)))                                 # 3*33*64 -> 1*16*64
-model.add(Dropout(0.2))  # ドロップアウト
+#model.add(Dropout(0.2))  # ドロップアウト
 
 model.add(Flatten())  # 一次元の配列に変換                                # 1*16*64 -> 1024
 model.add(Dense(256))
@@ -194,8 +199,7 @@ model.save('/home/maeda/machine_learning/results/cnn-2d/kikuchi_7vals_' + str(le
 
 
 # 学習曲線
-plt.figure(figsize=(8, 6))
-
+fig = plt.figure(figsize=(8, 6))
 # 損失（loss）をプロット
 plt.plot(history.history['loss'], label='Training Loss')
 plt.plot(history.history['val_loss'], label='Validation Loss')    #Validation loss : 精度検証データにおける損失
