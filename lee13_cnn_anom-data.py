@@ -67,7 +67,7 @@ olr_norm = normalization(olr)
 u850_norm = normalization(u850)
 h850_norm = normalization(h850)
 #pr_wtr_norm = normalization(pr_wtr)
-del olr, u850, u850, h850
+del olr, u850, h850
 
 # initial の気象場を後ろにずらして予測問題を解くため、気象場の方をずらした後にインデクシングする
 lead_time = 10
