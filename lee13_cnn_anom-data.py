@@ -39,7 +39,7 @@ h850 = data1['h850']
 #pr_wtr = data4['data_anom_rm'][:-365,20:50,16:66]
 time = data1['time']
 real_time = pd.to_datetime(time, unit='h', origin=pd.Timestamp('1800-01-01')) # 時刻をdatetime型に変換
-print(lat.shape, lon.shape, olr.shape, time.shape, real_time.shape, u850.shape, h8501.shape)
+print(lat.shape, lon.shape, olr.shape, time.shape, real_time.shape, u850.shape, h850.shape)
 print(real_time[0], real_time[-1])
 
 # bsiso index (MVEOF) 読み込み
