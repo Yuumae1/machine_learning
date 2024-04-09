@@ -74,7 +74,7 @@ print('Amp_nrm_bsiso = ', Amp_nrm_bsiso.shape)
 print(year, month, day)
 
 # 全て一律にずらしたあと、インデクシングする
-lead_time = 0
+lead_time = 10
 multi_forcast = False
 if multi_forcast == True:
   output_shape = 2 * (lead_time + 1)
@@ -149,7 +149,7 @@ del olr_ipt_train, olr_ipt_test, u850_ipt_train, u850_ipt_test, v850_ipt_train, 
 # CNNモデルの構築
 model = Sequential()
 # 入力画像　25×144×3 ：(緯度方向の格子点数)×(軽度方向の格子点数)×(チャンネル数、OLRのラグ)
-model.add(Conv2D(16, (3, 3), padding='same', input_shape=(25, 144, 9), strides=(2,2), ))   # ゼロパディング、バッチサイズ以外の画像の形状を指定 25*144*1 -> 25*144*8
+model.add(Conv2D(16, (3, 3), padding='same', input_shape=(25, 144, 9), strides=(2,2) ))   # ゼロパディング、バッチサイズ以外の画像の形状を指定 25*144*1 -> 25*144*8
 model.add(LayerNormalization())
 model.add(Activation('relu'))                                             # 活性化関数
 #model.add(MaxPooling2D(pool_size=(2, 2)))                                 # 21*140*16 -> 10*70*16
@@ -207,3 +207,4 @@ plt.legend()
 
 # 保存
 plt.savefig('/home/maeda/machine_learning/results/cnn-2d/l-curve_kikuchi_7vals_' + str(lead_time) + 'day.png')
+plt.close()
