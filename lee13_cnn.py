@@ -153,13 +153,13 @@ model.add(LayerNormalization())
 model.add(Activation('relu'))
 #model.add(MaxPooling2D(pool_size=(2, 2)))                                 # 21*140*16 -> 10*70*16
 
-#model.add(Conv2D(64, (2, 2), padding='same', strides=(2,2)))                             # 10*70*16 -> 10*70*32
-#model.add(LayerNormalization())
-#model.add(Activation('relu'))
+model.add(Conv2D(64, (2, 2), padding='same', strides=(2,2)))                             # 10*70*16 -> 10*70*32
+model.add(LayerNormalization())
+model.add(Activation('relu'))
 
 model.add(Flatten())  # 一次元の配列に変換                                # 1*16*64 -> 1024
-#model.add(Dense(1024))
-model.add(Dense(128))
+model.add(Dense(1024))
+model.add(Dense(256))
 #model.add(Activation('relu'))
 #model.add(Dense(64))
 model.add(Activation('relu'))
