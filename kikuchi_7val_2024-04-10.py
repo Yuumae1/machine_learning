@@ -59,7 +59,8 @@ pr_wtr_norm = normalization(pr_wtr)
 data_file = '/home/maeda/data/bsiso_eeof/bsiso_rt-PCs.npz'
 
 PC     = np.load(data_file)['rt_PCs'][:,:2]
-PC_norm = PC / PC.std(axis=0)[np.newaxis,:]
+sign = np.array([-1, 1]).T
+PC_norm = sign * PC / PC.std(axis=0)[np.newaxis,:]
 
 time2   = np.load(data_file)['time']
 real_time2 = pd.to_datetime(time2, unit='h', origin=pd.Timestamp('1800-01-01')) # 時刻をdatetime型に変換
@@ -151,12 +152,12 @@ model.add(Conv2D(32, (3, 3), padding='same', input_shape=(25, 144, 3*7), strides
 model.add(LayerNormalization())
 model.add(Activation('relu'))                                             # 活性化関数
 #model.add(MaxPooling2D(pool_size=(2, 2)))                                 # 21*140*16 -> 10*70*16
-model.add(Conv2D(64, (3, 3), padding='same', strides=(2,2)))                                             # 25*144*8 -> 21*140*16
+model.add(Conv2D(64, (2, 2), padding='same', strides=(2,2)))                                             # 25*144*8 -> 21*140*16
 model.add(LayerNormalization())
 model.add(Activation('relu'))
 #model.add(MaxPooling2D(pool_size=(2, 2)))                                 # 21*140*16 -> 10*70*16
 
-model.add(Conv2D(64, (2, 2), padding='same', strides=(2,2)))                             # 10*70*16 -> 10*70*32
+model.add(Conv2D(128, (2, 2), padding='same', strides=(2,2)))                             # 10*70*16 -> 10*70*32
 model.add(LayerNormalization())
 model.add(Activation('relu'))
 
