@@ -139,7 +139,7 @@ def learning_curve(history, lead_time):
   plt.figure(figsize=(8, 6))
   plt.plot(history.history['loss'], label='Training Loss')
   plt.plot(history.history['val_loss'], label='Validation Loss')    #Validation loss : 精度検証データにおける損失
-  plt.xlim(0, 500)
+  plt.xlim(0, 300)
   plt.xlabel('Epoch')
   plt.ylabel('Loss')
   plt.title('Loss vs. Epoch   Lead Time = ' + str(lead_time) + 'days')
@@ -149,36 +149,38 @@ def learning_curve(history, lead_time):
 
 
 # ==== iteration program ====
+for lead_time in range(35):
 
-lead_time = 0
-print('==== lead time : {} day ====='.format(lead_time))
+  print('==== lead time : {} day ====='.format(lead_time))
 
-data, rt, sup_train, sup_test, output_shape = indexing(lead_time)
+  data, rt, sup_train, sup_test, output_shape = indexing(lead_time)
 
-olr_ipt_train, olr_ipt_test = preprocess(olr_norm, rt, lead_time)
-u850_ipt_train, u850_ipt_test = preprocess(u850_norm, rt, lead_time)
-v850_ipt_train, v850_ipt_test = preprocess(v850_norm, rt, lead_time)
-u200_ipt_train, u200_ipt_test = preprocess(u200_norm, rt, lead_time)
-v200_ipt_train, v200_ipt_test = preprocess(v200_norm, rt, lead_time)
-h850_ipt_train, h850_ipt_test = preprocess(h850_norm, rt, lead_time)
-pr_wtr_ipt_train, pr_wtr_ipt_test = preprocess(pr_wtr_norm, rt, lead_time)
+  olr_ipt_train, olr_ipt_test = preprocess(olr_norm, rt, lead_time)
+  u850_ipt_train, u850_ipt_test = preprocess(u850_norm, rt, lead_time)
+  v850_ipt_train, v850_ipt_test = preprocess(v850_norm, rt, lead_time)
+  u200_ipt_train, u200_ipt_test = preprocess(u200_norm, rt, lead_time)
+  v200_ipt_train, v200_ipt_test = preprocess(v200_norm, rt, lead_time)
+  h850_ipt_train, h850_ipt_test = preprocess(h850_norm, rt, lead_time)
+  pr_wtr_ipt_train, pr_wtr_ipt_test = preprocess(pr_wtr_norm, rt, lead_time)
 
-ipt_train = np.concatenate([olr_ipt_train, u850_ipt_train,
-                            v850_ipt_train, u200_ipt_train, v200_ipt_train, h850_ipt_train, pr_wtr_ipt_train
-                            ], 3)
-ipt_test  = np.concatenate([olr_ipt_test, u850_ipt_test, 
-                            v850_ipt_test, u200_ipt_test, v200_ipt_test, h850_ipt_test, pr_wtr_ipt_test
-                            ], 3)
-print(ipt_train.shape, ipt_test.shape)
+  ipt_train = np.concatenate([olr_ipt_train, u850_ipt_train,
+                              v850_ipt_train, u200_ipt_train, v200_ipt_train, h850_ipt_train, pr_wtr_ipt_train
+                              ], 3)
+  ipt_test  = np.concatenate([olr_ipt_test, u850_ipt_test, 
+                              v850_ipt_test, u200_ipt_test, v200_ipt_test, h850_ipt_test, pr_wtr_ipt_test
+                              ], 3)
+  print(ipt_train.shape, ipt_test.shape)
 
 
-model = cnn_model()
-model.compile(optimizer=Adam(), loss='mean_squared_error')
-history = model.fit(ipt_train, sup_train, epochs=10, batch_size=128, validation_data=(ipt_test, sup_test))
-predict = model.predict(ipt_test, batch_size=None, verbose=0, steps=None) # モデルの出力を獲得する
-print(predict.shape)
-y_test = sup_test
-culc_cor(predict, y_test, lead_time)
-learning_curve(history, lead_time)
-np.savez('/home/maeda/machine_learning/results/kikuchi-7vals_v1/result-value_7vals_' + str(lead_time) + 'day.npz', predict, y_test)
-model.save('/home/maeda/machine_learning/results/kikuchi-7vals_v1/model_7vals_' + str(lead_time) + 'day.hdf5')
+  model = cnn_model()
+  model.compile(optimizer=Adam(), loss='mean_squared_error')
+  history = model.fit(ipt_train, sup_train, epochs=300, batch_size=128, validation_data=(ipt_test, sup_test))
+  predict = model.predict(ipt_test, batch_size=None, verbose=0, steps=None) # モデルの出力を獲得する
+  print(predict.shape)
+  y_test = sup_test
+  culc_cor(predict, y_test, lead_time)
+  learning_curve(history, lead_time)
+  np.savez('/home/maeda/machine_learning/results/kikuchi-7vals_v1/result-value_7vals_' + str(lead_time) + 'day.npz', predict, y_test)
+  model.save('/home/maeda/machine_learning/results/kikuchi-7vals_v1/model_7vals_' + str(lead_time) + 'day.hdf5')
+
+print('==== Finish! ====')
