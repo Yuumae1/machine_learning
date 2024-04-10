@@ -78,7 +78,7 @@ else:
 print('output shape = ', output_shape)
 
 #rt = real_time[10:-lead_time-1]
-rt = real_time[10:-lead_time-1]
+rt = real_time[10:-lead_time-1+10]
 # 教師データは前進させる
 if multi_forcast == True:
   sup_data = []
@@ -96,7 +96,7 @@ def preprocess(data):
   #ipt_lag0  = data[10:-lead_time-1]
   #ipt_lag5  = data[5:-lead_time-6]
   #ipt_lag10 = data[:-lead_time-11]
-  ipt = data[10:-lead_time-1]
+  ipt = data[:-lead_time-1]
   # =========
   # 訓練データの作成(通年データとする)
   idx = np.where((rt.year <= 2014))[0]
