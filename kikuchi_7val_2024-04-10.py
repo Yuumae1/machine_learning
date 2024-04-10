@@ -49,11 +49,11 @@ def normalization(data):
 
 olr_norm  = normalization(olr)
 u850_norm = normalization(u850)
-#v850_norm = normalization(v850)
-#u200_norm = normalization(u200)
-#v200_norm = normalization(v200)
-#h850_norm = normalization(h850)
-#pr_wtr_norm = normalization(pr_wtr)
+v850_norm = normalization(v850)
+u200_norm = normalization(u200)
+v200_norm = normalization(v200)
+h850_norm = normalization(h850)
+pr_wtr_norm = normalization(pr_wtr)
 
 # bsiso index (eEOF) 読み込み
 data_file = '/home/maeda/data/bsiso_eeof/bsiso_rt-PCs.npz'
@@ -70,7 +70,7 @@ print('time PCs= ', time2.shape)
 print('real time PCs = ', real_time2[0], real_time2[-1])
 
 # 全て一律にずらしたあと、インデクシングする
-lead_time = 0
+lead_time = 10
 multi_forcast = False
 if multi_forcast == True:
   output_shape = 2 * (lead_time + 1)
@@ -120,17 +120,17 @@ def preprocess(data):
 
 olr_ipt_train, olr_ipt_test = preprocess(olr_norm)
 u850_ipt_train, u850_ipt_test = preprocess(u850_norm)
-#v850_ipt_train, v850_ipt_test = preprocess(v850_norm)
-#u200_ipt_train, u200_ipt_test = preprocess(u200_norm)
-#v200_ipt_train, v200_ipt_test = preprocess(v200_norm)
-#h850_ipt_train, h850_ipt_test = preprocess(h850_norm)
-#pr_wtr_ipt_train, pr_wtr_ipt_test = preprocess(pr_wtr_norm)
+v850_ipt_train, v850_ipt_test = preprocess(v850_norm)
+u200_ipt_train, u200_ipt_test = preprocess(u200_norm)
+v200_ipt_train, v200_ipt_test = preprocess(v200_norm)
+h850_ipt_train, h850_ipt_test = preprocess(h850_norm)
+pr_wtr_ipt_train, pr_wtr_ipt_test = preprocess(pr_wtr_norm)
 
 ipt_train = np.concatenate([olr_ipt_train, u850_ipt_train,
-                            #v850_ipt_train, u200_ipt_train, v200_ipt_train, h850_ipt_train, pr_wtr_ipt_train
+                            v850_ipt_train, u200_ipt_train, v200_ipt_train, h850_ipt_train, pr_wtr_ipt_train
                             ], 3)
 ipt_test  = np.concatenate([olr_ipt_test, u850_ipt_test, 
-                            #v850_ipt_test, u200_ipt_test, v200_ipt_test, h850_ipt_test, pr_wtr_ipt_test
+                            v850_ipt_test, u200_ipt_test, v200_ipt_test, h850_ipt_test, pr_wtr_ipt_test
                             ], 3)
 #ipt_train, ipt_test = v850_ipt_train, v850_ipt_test
 
@@ -152,7 +152,7 @@ del olr_ipt_train, olr_ipt_test, u850_ipt_train, u850_ipt_test
 # CNNモデルの構築
 model = Sequential()
 # 入力画像　25×144×3 ：(緯度方向の格子点数)×(軽度方向の格子点数)×(チャンネル数、OLRのラグ)
-model.add(Conv2D(32, (3, 3), padding='same', input_shape=(25, 144, 3*2), strides=(2,2) ))   # ゼロパディング、バッチサイズ以外の画像の形状を指定 25*144*1 -> 25*144*8
+model.add(Conv2D(32, (3, 3), padding='same', input_shape=(25, 144, 3*7), strides=(2,2) ))   # ゼロパディング、バッチサイズ以外の画像の形状を指定 25*144*1 -> 25*144*8
 model.add(LayerNormalization())
 model.add(Activation('relu'))                                             # 活性化関数
 #model.add(MaxPooling2D(pool_size=(2, 2)))                                 # 21*140*16 -> 10*70*16

@@ -212,5 +212,5 @@ plt.title('Loss vs. Epoch   Lead Time = ' + str(lead_time) + 'days')
 plt.legend()
 
 # 保存
-plt.savefig('/home/maeda/machine_learning/results/cnn-2d/l-curve_kikuchi_7vals-mjjaso_no-lag' + str(lead_time) + 'day.png')
+plt.savefig('/home/maeda/machine_learning/results/cnn-2d/l-curve_kikuchi_7vals_no-lag' + str(lead_time) + 'day.png')
 plt.close()
