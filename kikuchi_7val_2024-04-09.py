@@ -58,7 +58,7 @@ pr_wtr_norm = normalization(pr_wtr)
 # bsiso index (eEOF) 読み込み
 data_file = '/home/maeda/data/bsiso_eeof/bsiso_rt-PCs.npz'
 
-PC     = np.load(data_file)['rt_PCs']
+PC     = np.load(data_file)['rt_PCs'][:,:2]
 time2   = np.load(data_file)['time']
 real_time2 = pd.to_datetime(time2, unit='h', origin=pd.Timestamp('1800-01-01')) # 時刻をdatetime型に変換
 #
