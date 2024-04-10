@@ -64,7 +64,7 @@ PC_norm = PC / PC.std(axis=0)[np.newaxis,:]
 time2   = np.load(data_file)['time']
 real_time2 = pd.to_datetime(time2, unit='h', origin=pd.Timestamp('1800-01-01')) # 時刻をdatetime型に変換
 #
-print('PCs = ', PC.shape)
+print('PCs = ', PC_norm.shape)
 print('time = ', time2.shape)
 print('real time = ', real_time2[0], real_time2[-1])
 
@@ -82,11 +82,11 @@ rt = real_time[10:-lead_time-1]
 if multi_forcast == True:
   sup_data = []
   for j in range(lead_time+1):
-    sup_j = PC[j:-lead_time-1+j]
+    sup_j = PC_norm[j:-lead_time-1+j]
     sup_data.append(sup_j)
   sup_data = np.array(sup_data).transpose(1,0,2).reshape(-1, output_shape)
 else:
-  sup_data = PC[lead_time:]
+  sup_data = PC_norm[lead_time:]
 print(sup_data.shape)
 
 
