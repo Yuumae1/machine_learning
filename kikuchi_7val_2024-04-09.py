@@ -96,7 +96,7 @@ def preprocess(data):
   #ipt = data[:-lead_time-1]
   # =========
   # 訓練データの作成(通年データとする)
-  idx = np.where((real_time.year <= 2014))[0]
+  idx = np.where((rt.year <= 2014))[0]
   ipt_lag0_train = ipt_lag0[idx]
   ipt_lag5_train = ipt_lag5[idx]
   ipt_lag10_train = ipt_lag10[idx]
@@ -105,7 +105,7 @@ def preprocess(data):
   ipt_train = np.stack([ipt_lag0_train, ipt_lag5_train, ipt_lag10_train], 3)
 
   # 検証データの作成
-  idx = np.where((real_time.year > 2014))[0]
+  idx = np.where((rt.year > 2014))[0]
   ipt_lag0_test = ipt_lag0[idx]
   ipt_lag5_test = ipt_lag5[idx]
   ipt_lag10_test = ipt_lag10[idx]
@@ -127,9 +127,9 @@ ipt_test = np.concatenate([olr_ipt_test, u850_ipt_test, v850_ipt_test, u200_ipt_
 #ipt_train, ipt_test = v850_ipt_train, v850_ipt_test
 
 # その他のインデクシング
-idx = np.where((real_time.year <= 2014))[0]
+idx = np.where((rt.year <= 2014))[0]
 sup_train = sup_data[idx]
-idx = np.where((real_time.year > 2014))[0]
+idx = np.where((rt.year > 2014))[0]
 sup_test = sup_data[idx]
 #amp = amp[idx]
 #ph = ph[idx]
