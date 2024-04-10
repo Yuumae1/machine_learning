@@ -25,14 +25,14 @@ print('data = ', data.files)
 
 lat = data['lat'][24:49]
 lon = data['lon']
-olr = data['olr'][80:-435,24:49,:]
-u850 = data['u850'][80:-435,24:49,:]
-v850 = data['v850'][80:-435,24:49,:]
-u200 = data['u200'][80:-435,24:49,:]
-v200 = data['v200'][80:-435,24:49,:]
-h850 = data['h850'][80:-435,24:49,:]
-pr_wtr = data['pr_wtr'][80:-435,24:49,:]
-time = data['time'][80:-435]    # 射影後にデータが10日進むため、時刻の方を前進させておく
+olr = data['olr'][80+10:-435+10,24:49,:]
+u850 = data['u850'][80+10:-435+10,24:49,:]
+v850 = data['v850'][80+10:-435+10,24:49,:]
+u200 = data['u200'][80+10:-435+10,24:49,:]
+v200 = data['v200'][80+10:-435+10,24:49,:]
+h850 = data['h850'][80+10:-435+10,24:49,:]
+pr_wtr = data['pr_wtr'][80+10:-435+10,24:49,:]
+time = data['time'][80+10:-435+10]    # 射影後にデータが10日進むため、時刻の方を前進させておく
 real_time = pd.to_datetime(time, unit='h', origin=pd.Timestamp('1800-01-01')) # 時刻をdatetime型に変換
 print(lat.shape, lon.shape, olr.shape, u850.shape, v850.shape, u200.shape, v200.shape, h850.shape, pr_wtr.shape)
 print(real_time[0], real_time[-1])
@@ -163,10 +163,10 @@ model.add(Activation('relu'))
 
 #model.add(MaxPooling2D(pool_size=(2, 2)))                                 # 10*70*32 -> 5*35*32
 #model.add(MaxPooling2D(pool_size=(2, 2)))                                 # 3*33*64 -> 1*16*64
-model.add(Dropout(0.2))  # ドロップアウト
 
 model.add(Flatten())  # 一次元の配列に変換                                # 1*16*64 -> 1024
-model.add(Dense(1024))
+model.add(Dense(256))
+model.add(Dropout(0.2))  # ドロップアウト
 model.add(Activation('relu'))
 #model.add(Dense(64))
 #model.add(Activation('relu'))
