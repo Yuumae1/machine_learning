@@ -32,7 +32,7 @@ u200 = data['u200'][80:-435,24:49,:]
 v200 = data['v200'][80:-435,24:49,:]
 h850 = data['h850'][80:-435,24:49,:]
 pr_wtr = data['pr_wtr'][80:-435,24:49,:]
-time = data['time'][80+10:-435+10]    # 射影後にデータが10日進むため、時刻の方を前進させておく
+time = data['time'][80:-435]    # 射影後にデータが10日進むため、時刻の方を前進させておく
 real_time = pd.to_datetime(time, unit='h', origin=pd.Timestamp('1800-01-01')) # 時刻をdatetime型に変換
 print(lat.shape, lon.shape, olr.shape, u850.shape, v850.shape, u200.shape, v200.shape, h850.shape, pr_wtr.shape)
 print(real_time[0], real_time[-1])
@@ -61,12 +61,12 @@ data_file = '/home/maeda/data/bsiso_eeof/bsiso_rt-PCs.npz'
 PC     = np.load(data_file)['rt_PCs'][:,:2]
 PC_norm = PC / PC.std(axis=0)[np.newaxis,:]
 
-time2   = np.load(data_file)['time'][:-10]
+time2   = np.load(data_file)['time']
 real_time2 = pd.to_datetime(time2, unit='h', origin=pd.Timestamp('1800-01-01')) # 時刻をdatetime型に変換
 #
 print('PCs = ', PC_norm.shape)
-print('time = ', time2.shape)
-print('real time = ', real_time2[0], real_time2[-1])
+print('time PCs= ', time2.shape)
+print('real time PCs = ', real_time2[0], real_time2[-1])
 
 # 全て一律にずらしたあと、インデクシングする
 lead_time = 0
@@ -78,7 +78,7 @@ else:
 print('output shape = ', output_shape)
 
 #rt = real_time[10:-lead_time-1]
-rt = real_time[:-lead_time-1]
+rt = real_time2[:-lead_time-1]
 # 教師データは前進させる
 if multi_forcast == True:
   sup_data = []
@@ -96,7 +96,7 @@ def preprocess(data):
   #ipt_lag0  = data[10:-lead_time-1]
   #ipt_lag5  = data[5:-lead_time-6]
   #ipt_lag10 = data[:-lead_time-11]
-  ipt = data[:-lead_time-1]
+  ipt = data[10:-lead_time-1]
   # =========
   # 訓練データの作成(通年データとする)
   idx = np.where((rt.year <= 2014))[0]
