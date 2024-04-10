@@ -61,7 +61,7 @@ data_file = '/home/maeda/data/bsiso_eeof/bsiso_rt-PCs.npz'
 PC     = np.load(data_file)['rt_PCs'][:,:2]
 PC_norm = PC / PC.std(axis=0)[np.newaxis,:]
 
-time2   = np.load(data_file)['time']
+time2   = np.load(data_file)['time'][:-10]
 real_time2 = pd.to_datetime(time2, unit='h', origin=pd.Timestamp('1800-01-01')) # 時刻をdatetime型に変換
 #
 print('PCs = ', PC_norm.shape)
@@ -69,7 +69,7 @@ print('time = ', time2.shape)
 print('real time = ', real_time2[0], real_time2[-1])
 
 # 全て一律にずらしたあと、インデクシングする
-lead_time = 10
+lead_time = 0
 multi_forcast = False
 if multi_forcast == True:
   output_shape = 2 * (lead_time + 1)
@@ -77,6 +77,7 @@ else:
   output_shape = 2
 print('output shape = ', output_shape)
 
+#rt = real_time[10:-lead_time-1]
 rt = real_time[10:-lead_time-1]
 # 教師データは前進させる
 if multi_forcast == True:
@@ -95,7 +96,7 @@ def preprocess(data):
   #ipt_lag0  = data[10:-lead_time-1]
   #ipt_lag5  = data[5:-lead_time-6]
   #ipt_lag10 = data[:-lead_time-11]
-  ipt = data[:-lead_time-1]
+  ipt = data[10:-lead_time-1]
   # =========
   # 訓練データの作成(通年データとする)
   idx = np.where((rt.year <= 2014))[0]
@@ -190,7 +191,7 @@ np.savez('/home/maeda/machine_learning/results/cnn-2d/kikuchi_7vals_no-lag' + st
 model.save('/home/maeda/machine_learning/results/cnn-2d/kikuchi_7vals_no-lag' + str(lead_time) + 'day.hdf5')
 
 # 相関係数の計算
-j = lead_time
+j = 0
 cor = (np.sum(predict[:,2*j] * y_test[:,2*j], axis=0) + np.sum(predict[:,2*j+1] * y_test[:,2*j+1], axis=0)) / \
         (np.sqrt(np.sum(predict[:,2*j] ** 2 + predict[:,2*j+1] ** 2, axis=0)) * np.sqrt(np.sum(y_test[:,2*j] ** 2 + y_test[:,2*j+1] ** 2, axis=0)))
 print('lead time {} day = '.format(j), cor)
