@@ -177,5 +177,5 @@ print(predict.shape)
 y_test = sup_test
 culc_cor(predict, y_test, lead_time)
 learning_curve(history, lead_time)
-np.savez('/home/maeda/machine_learning/results/cnn-2d/kikuchi_7vals_no-lag' + str(lead_time) + 'day.npz', predict, y_test)
-model.save('/home/maeda/machine_learning/results/cnn-2d/kikuchi_7vals_no-lag' + str(lead_time) + 'day.hdf5')
+np.savez('/home/maeda/machine_learning/results/kikuchi-7vals_v1/result-value_7vals_' + str(lead_time) + 'day.npz', predict, y_test)
+model.save('/home/maeda/machine_learning/results/kikuchi-7vals_v1/model_7vals_' + str(lead_time) + 'day.hdf5')
