@@ -126,7 +126,7 @@ def cnn_model():
   model.add(Dense(64))
   model.add(Activation('relu'))
   #model.add(Dense(64))
-  model.add(Dense(output_shape=2, activation='linear'))
+  model.add(Dense(2, activation='linear'))
   model.summary()
   return model
 
@@ -151,7 +151,7 @@ def learning_curve(history, lead_time):
 # ==== iteration program ====
 
 lead_time = 0
-print('==== lead time = {} day'.format(lead_time))
+print('==== lead time : {} day ====='.format(lead_time))
 
 data, rt, sup_train, sup_test, output_shape = indexing(lead_time)
 
