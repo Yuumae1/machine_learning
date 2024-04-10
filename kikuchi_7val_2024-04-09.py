@@ -80,11 +80,11 @@ rt = real_time[10:-lead_time-1]
 if multi_forcast == True:
   sup_data = []
   for j in range(lead_time+1):
-    sup_j = PC[10+j:-lead_time-1+j]
+    sup_j = PC[j:-lead_time-1+j]
     sup_data.append(sup_j)
   sup_data = np.array(sup_data).transpose(1,0,2).reshape(-1, output_shape)
 else:
-  sup_data = PC[10+lead_time:]
+  sup_data = PC[lead_time:]
 print(sup_data.shape)
 
 
