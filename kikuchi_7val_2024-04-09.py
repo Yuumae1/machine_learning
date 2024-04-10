@@ -56,22 +56,15 @@ h850_norm = normalization(h850)
 pr_wtr_norm = normalization(pr_wtr)
 
 # bsiso index (eEOF) 読み込み
-data_file = '/home/maeda/archive/kikuchi_bsiso_index.dat'
+data_file = '/home/maeda/data/bsiso_eeof/bsiso_rt-PCs.npz'
 
-year    = np.loadtxt(data_file, usecols = 0, dtype = int)
-month   = np.loadtxt(data_file, usecols = 1, dtype = int)
-day     = np.loadtxt(data_file, usecols = 2, dtype = int)
-PC     = np.loadtxt(data_file, usecols = [3, 4])
-#PCy     = np.loadtxt(data_file, usecols = 4)
-phase   = np.loadtxt(data_file, usecols = 5, dtype = int)
-Amp_nrm_bsiso = np.loadtxt(data_file, usecols = 6, dtype = float)
-#index = np.loadtxt(data_file)
-
-print('month = ', month.shape)
-print('phase = ', phase.shape)
-print( 'PC = ', PC.shape)
-print('Amp_nrm_bsiso = ', Amp_nrm_bsiso.shape)
-print(year, month, day)
+PC     = np.load(data_file)['PCs']
+time2   = np.load(data_file)['time']
+real_time2 = pd.to_datetime(time2, unit='h', origin=pd.Timestamp('1800-01-01')) # 時刻をdatetime型に変換
+#
+print('PCs = ', PC.shape)
+print('time = ', time.shape)
+print('real time = ', real_time2[0], real_time2[-1])
 
 # 全て一律にずらしたあと、インデクシングする
 lead_time = 0
@@ -82,11 +75,6 @@ else:
   output_shape = 2
 print('output shape = ', output_shape)
 
-amp = Amp_nrm_bsiso[10:-lead_time-1]
-ph = phase[10:-lead_time-1]
-yy = year[10:-lead_time-1]
-mm = month[10:-lead_time-1]
-dd = day[10:-lead_time-1]
 rt = real_time[10:-lead_time-1]
 # 教師データは前進させる
 if multi_forcast == True:
@@ -108,7 +96,7 @@ def preprocess(data):
   #ipt = data[:-lead_time-1]
   # =========
   # 訓練データの作成(通年データとする)
-  idx = np.where((yy <= 2014))[0]
+  idx = np.where((real_time.year <= 2014))[0]
   ipt_lag0_train = ipt_lag0[idx]
   ipt_lag5_train = ipt_lag5[idx]
   ipt_lag10_train = ipt_lag10[idx]
@@ -117,7 +105,7 @@ def preprocess(data):
   ipt_train = np.stack([ipt_lag0_train, ipt_lag5_train, ipt_lag10_train], 3)
 
   # 検証データの作成
-  idx = np.where((yy > 2014))[0]
+  idx = np.where((real_time.year > 2014))[0]
   ipt_lag0_test = ipt_lag0[idx]
   ipt_lag5_test = ipt_lag5[idx]
   ipt_lag10_test = ipt_lag10[idx]
@@ -139,17 +127,17 @@ ipt_test = np.concatenate([olr_ipt_test, u850_ipt_test, v850_ipt_test, u200_ipt_
 #ipt_train, ipt_test = v850_ipt_train, v850_ipt_test
 
 # その他のインデクシング
-idx = np.where((yy <= 2014))[0]
+idx = np.where((real_time.year <= 2014))[0]
 sup_train = sup_data[idx]
-idx = np.where((yy > 2014))[0]
+idx = np.where((real_time.year > 2014))[0]
 sup_test = sup_data[idx]
-amp = amp[idx]
-ph = ph[idx]
-yy = yy[idx]
-mm = mm[idx]
-dd = dd[idx]
-rt = rt[idx]
-print(sup_test.shape, ipt_test.shape, ipt_train.shape, ph.shape, yy.shape, mm.shape, dd.shape)
+#amp = amp[idx]
+#ph = ph[idx]
+#yy = yy[idx]
+#mm = mm[idx]
+#dd = dd[idx]
+#rt = rt[idx]
+print(sup_test.shape, sup_train.shape, ipt_test.shape, ipt_train.shape)
 del olr_ipt_train, olr_ipt_test, u850_ipt_train, u850_ipt_test, v850_ipt_train, v850_ipt_test
 
 
