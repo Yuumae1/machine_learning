@@ -77,7 +77,7 @@ def indexing(lead_time):
   sup_train = sup_data[idx]
   idx = np.where((rt.year > 2014))[0]
   sup_test = sup_data[idx]
-  print(sup_test.shape, sup_train.shape, ipt_test.shape, ipt_train.shape)
+  print(sup_test.shape, sup_train.shape)
   return data, rt, sup_train, sup_test, output_shape
 
 # 入力データの前処理
