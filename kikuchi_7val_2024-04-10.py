@@ -69,7 +69,7 @@ print('time = ', time2.shape)
 print('real time = ', real_time2[0], real_time2[-1])
 
 # 全て一律にずらしたあと、インデクシングする
-lead_time = 0
+lead_time = 10
 multi_forcast = False
 if multi_forcast == True:
   output_shape = 2 * (lead_time + 1)
