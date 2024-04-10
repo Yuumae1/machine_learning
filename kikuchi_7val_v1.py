@@ -57,55 +57,40 @@ pr_wtr_norm = normalization(pr_wtr)
 
 # bsiso index (eEOF) 読み込み
 data_file = '/home/maeda/data/bsiso_eeof/bsiso_rt-PCs.npz'
-
 PC      = np.load(data_file)['rt_PCs'][:,:2]
 sign    = np.array([-1, 1]).T
 PC_norm = sign * PC / PC.std(axis=0)[np.newaxis,:]
-
 time2   = np.load(data_file)['time']
 real_time2 = pd.to_datetime(time2, unit='h', origin=pd.Timestamp('1800-01-01')) # 時刻をdatetime型に変換
-#
+
 print('PCs = ', PC_norm.shape)
 print('time PCs= ', time2.shape)
 print('real time PCs = ', real_time2[0], real_time2[-1])
 
-# 全て一律にずらしたあと、インデクシングする
-lead_time = 10
-multi_forcast = False
-if multi_forcast == True:
-  output_shape = 2 * (lead_time + 1)
-else:
+# インデクシングする関数
+def indexing(lead_time):
   output_shape = 2
-print('output shape = ', output_shape)
-
-#rt = real_time[10:-lead_time-1]
-rt = real_time2[:-lead_time-1]
-# 教師データは前進させる
-if multi_forcast == True:
-  sup_data = []
-  for j in range(lead_time+1):
-    sup_j = PC_norm[j:-lead_time-1+j]
-    sup_data.append(sup_j)
-  sup_data = np.array(sup_data).transpose(1,0,2).reshape(-1, output_shape)
-else:
+  rt = real_time2[:-lead_time-1]
   sup_data = PC_norm[lead_time:]
-print(sup_data.shape)
-
+  print(sup_data.shape)
+  idx = np.where((rt.year <= 2014))[0]
+  sup_train = sup_data[idx]
+  idx = np.where((rt.year > 2014))[0]
+  sup_test = sup_data[idx]
+  print(sup_test.shape, sup_train.shape, ipt_test.shape, ipt_train.shape)
+  return data, rt, sup_train, sup_test, output_shape
 
 # 入力データの前処理
-def preprocess(data):
+def preprocess(data, rt, lead_time):
   ipt_lag0  = data[10:-lead_time-1]
   ipt_lag5  = data[5:-lead_time-6]
   ipt_lag10 = data[:-lead_time-11]
-  #ipt = data[10:-lead_time-1]
   # =========
   # 訓練データの作成(通年データとする)
   idx = np.where((rt.year <= 2014))[0]
   ipt_lag0_train = ipt_lag0[idx]
   ipt_lag5_train = ipt_lag5[idx]
   ipt_lag10_train = ipt_lag10[idx]
-  #ipt_train = ipt[idx]
-  #ipt_train = np.concatenate([ipt_lag0_train, ipt_lag5_train, ipt_lag10_train], 1)
   ipt_train = np.stack([ipt_lag0_train, ipt_lag5_train, ipt_lag10_train], 3)
 
   # 検証データの作成
@@ -132,78 +117,65 @@ ipt_train = np.concatenate([olr_ipt_train, u850_ipt_train,
 ipt_test  = np.concatenate([olr_ipt_test, u850_ipt_test, 
                             v850_ipt_test, u200_ipt_test, v200_ipt_test, h850_ipt_test, pr_wtr_ipt_test
                             ], 3)
-#ipt_train, ipt_test = v850_ipt_train, v850_ipt_test
-
-# その他のインデクシング
-idx = np.where((rt.year <= 2014))[0]
-sup_train = sup_data[idx]
-idx = np.where((rt.year > 2014))[0]
-sup_test = sup_data[idx]
-#amp = amp[idx]
-#ph = ph[idx]
-#yy = yy[idx]
-#mm = mm[idx]
-#dd = dd[idx]
-#rt = rt[idx]
-print(sup_test.shape, sup_train.shape, ipt_test.shape, ipt_train.shape)
+print(ipt_train.shape, ipt_test.shape)
 del olr_ipt_train, olr_ipt_test, u850_ipt_train, u850_ipt_test
 
 
 # CNNモデルの構築
-model = Sequential()
-# 入力画像　25×144×3 ：(緯度方向の格子点数)×(軽度方向の格子点数)×(チャンネル数、OLRのラグ)
-model.add(Conv2D(32, (3, 3), padding='same', input_shape=(25, 144, 3*7), strides=(2,2) ))   
-model.add(LayerNormalization())
-model.add(Activation('relu'))                                           
-model.add(Conv2D(64, (2, 2), padding='same', strides=(2,2)))                                        
-model.add(LayerNormalization())
-model.add(Activation('relu'))
-model.add(Conv2D(128, (2, 2), padding='same', strides=(2,2)))                           
-model.add(LayerNormalization())
-model.add(Activation('relu'))
-model.add(Dropout(0.2)) 
+def cnn_model():
+  model = Sequential()
+  # 入力画像　25×144×3 ：(緯度方向の格子点数)×(軽度方向の格子点数)×(チャンネル数、OLRのラグ)
+  model.add(Conv2D(32, (3, 3), padding='same', input_shape=(25, 144, 3*7), strides=(2,2) ))   
+  model.add(LayerNormalization())
+  model.add(Activation('relu'))                                           
+  model.add(Conv2D(64, (2, 2), padding='same', strides=(2,2)))                                        
+  model.add(LayerNormalization())
+  model.add(Activation('relu'))
+  model.add(Conv2D(128, (2, 2), padding='same', strides=(2,2)))                           
+  model.add(LayerNormalization())
+  model.add(Activation('relu'))
+  model.add(Dropout(0.2)) 
 
-model.add(Flatten())  # 一次元の配列に変換                                # 1*16*64 -> 1024
-model.add(Dense(64))
-model.add(Activation('relu'))
-#model.add(Dense(64))
-model.add(Dense(output_shape, activation='linear'))
-model.summary()
+  model.add(Flatten())  # 一次元の配列に変換                                # 1*16*64 -> 1024
+  model.add(Dense(64))
+  model.add(Activation('relu'))
+  #model.add(Dense(64))
+  model.add(Dense(output_shape=2, activation='linear'))
+  model.summary()
+  return model
 
-# モデルのコンパイルと学習の設定
-model.compile(optimizer=Adam(),
-              loss='mean_squared_error',  # MSE
-              )
-# モデルのトレーニング
-history = model.fit(ipt_train, sup_train, epochs=100, batch_size=128, validation_data=(ipt_test, sup_test))
+def culc_cor(predict, y_test, lead_time):
+  cor = (np.sum(predict[:,0] * y_test[:,0], axis=0) + np.sum(predict[:,1] * y_test[:,1], axis=0)) / \
+          (np.sqrt(np.sum(predict[:,0] ** 2 + predict[:,1] ** 2, axis=0)) * np.sqrt(np.sum(y_test[:,0] ** 2 + y_test[:,1] ** 2, axis=0)))
+  print('lead time {} day = '.format(lead_time), cor)
+
+def learning_curve(history, lead_time):
+  plt.figure(figsize=(8, 6))
+  plt.plot(history.history['loss'], label='Training Loss')
+  plt.plot(history.history['val_loss'], label='Validation Loss')    #Validation loss : 精度検証データにおける損失
+  plt.xlim(0, 500)
+  plt.xlabel('Epoch')
+  plt.ylabel('Loss')
+  plt.title('Loss vs. Epoch   Lead Time = ' + str(lead_time) + 'days')
+  plt.legend()
+  plt.savefig('/home/maeda/machine_learning/results/kikuchi-7vals_v1/learning_curve_7vals_' + str(lead_time) + 'day.png')
+  plt.close()
 
 
-# モデルの出力を獲得する
-predict = model.predict(ipt_test, batch_size=None, verbose=0, steps=None)
+# ==== main program ====
+
+lead_time = 0
+print('==== lead time = {} day'.format(lead_time))
+data, rt, sup_train, sup_test, output_shape = indexing(lead_time)
+ipt_train, ipt_test = preprocess(data, rt, lead_time)
+
+model = cnn_model()
+model.compile(optimizer=Adam(), loss='mean_squared_error')
+history = model.fit(ipt_train, sup_train, epochs=10, batch_size=128, validation_data=(ipt_test, sup_test))
+predict = model.predict(ipt_test, batch_size=None, verbose=0, steps=None) # モデルの出力を獲得する
 print(predict.shape)
 y_test = sup_test
+culc_cor(predict, y_test, lead_time)
+learning_curve(history, lead_time)
 np.savez('/home/maeda/machine_learning/results/cnn-2d/kikuchi_7vals_no-lag' + str(lead_time) + 'day.npz', predict, y_test)
-
-# モデルの保存
 model.save('/home/maeda/machine_learning/results/cnn-2d/kikuchi_7vals_no-lag' + str(lead_time) + 'day.hdf5')
-
-# 相関係数の計算
-j = 0
-cor = (np.sum(predict[:,2*j] * y_test[:,2*j], axis=0) + np.sum(predict[:,2*j+1] * y_test[:,2*j+1], axis=0)) / \
-        (np.sqrt(np.sum(predict[:,2*j] ** 2 + predict[:,2*j+1] ** 2, axis=0)) * np.sqrt(np.sum(y_test[:,2*j] ** 2 + y_test[:,2*j+1] ** 2, axis=0)))
-print('lead time {} day = '.format(lead_time), cor)
-
-# 学習曲線
-fig = plt.figure(figsize=(8, 6))
-# 損失（loss）をプロット
-plt.plot(history.history['loss'], label='Training Loss')
-plt.plot(history.history['val_loss'], label='Validation Loss')    #Validation loss : 精度検証データにおける損失
-plt.ylim(0, 0.5)
-plt.xlabel('Epoch')
-plt.ylabel('Loss')
-plt.title('Loss vs. Epoch   Lead Time = ' + str(lead_time) + 'days')
-plt.legend()
-
-# 保存
-plt.savefig('/home/maeda/machine_learning/results/cnn-2d/l-curve_kikuchi_7vals_no-lag' + str(lead_time) + 'day.png')
-plt.close()
