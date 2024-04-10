@@ -32,7 +32,7 @@ u200 = data['u200'][80:-435,24:49,:]
 v200 = data['v200'][80:-435,24:49,:]
 h850 = data['h850'][80:-435,24:49,:]
 pr_wtr = data['pr_wtr'][80:-435,24:49,:]
-time = data['time'][80:-435]
+time = data['time'][80+10:-435+10]    # 射影後にデータが10日進むため、時刻の方を前進させておく
 real_time = pd.to_datetime(time, unit='h', origin=pd.Timestamp('1800-01-01')) # 時刻をdatetime型に変換
 print(lat.shape, lon.shape, olr.shape, u850.shape, v850.shape, u200.shape, v200.shape, h850.shape, pr_wtr.shape)
 print(real_time[0], real_time[-1])
@@ -78,7 +78,7 @@ else:
 print('output shape = ', output_shape)
 
 #rt = real_time[10:-lead_time-1]
-rt = real_time[10:-lead_time-1+10]
+rt = real_time[:-lead_time-1]
 # 教師データは前進させる
 if multi_forcast == True:
   sup_data = []
