@@ -163,13 +163,13 @@ model.add(Activation('relu'))
 
 #model.add(MaxPooling2D(pool_size=(2, 2)))                                 # 10*70*32 -> 5*35*32
 #model.add(MaxPooling2D(pool_size=(2, 2)))                                 # 3*33*64 -> 1*16*64
-#model.add(Dropout(0.2))  # ドロップアウト
+model.add(Dropout(0.2))  # ドロップアウト
 
 model.add(Flatten())  # 一次元の配列に変換                                # 1*16*64 -> 1024
 model.add(Dense(1024))
 model.add(Activation('relu'))
-model.add(Dense(64))
-model.add(Activation('relu'))
+#model.add(Dense(64))
+#model.add(Activation('relu'))
 model.add(Dense(output_shape, activation='linear'))
 model.summary()
 
