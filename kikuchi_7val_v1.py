@@ -103,22 +103,8 @@ def preprocess(data, rt, lead_time):
   ipt_test = np.stack([ipt_lag0_test, ipt_lag5_test, ipt_lag10_test], 3)
   return ipt_train, ipt_test
 
-olr_ipt_train, olr_ipt_test = preprocess(olr_norm)
-u850_ipt_train, u850_ipt_test = preprocess(u850_norm)
-v850_ipt_train, v850_ipt_test = preprocess(v850_norm)
-u200_ipt_train, u200_ipt_test = preprocess(u200_norm)
-v200_ipt_train, v200_ipt_test = preprocess(v200_norm)
-h850_ipt_train, h850_ipt_test = preprocess(h850_norm)
-pr_wtr_ipt_train, pr_wtr_ipt_test = preprocess(pr_wtr_norm)
 
-ipt_train = np.concatenate([olr_ipt_train, u850_ipt_train,
-                            v850_ipt_train, u200_ipt_train, v200_ipt_train, h850_ipt_train, pr_wtr_ipt_train
-                            ], 3)
-ipt_test  = np.concatenate([olr_ipt_test, u850_ipt_test, 
-                            v850_ipt_test, u200_ipt_test, v200_ipt_test, h850_ipt_test, pr_wtr_ipt_test
-                            ], 3)
-print(ipt_train.shape, ipt_test.shape)
-del olr_ipt_train, olr_ipt_test, u850_ipt_train, u850_ipt_test
+
 
 
 # CNNモデルの構築
@@ -162,12 +148,29 @@ def learning_curve(history, lead_time):
   plt.close()
 
 
-# ==== main program ====
+# ==== iteration program ====
 
 lead_time = 0
 print('==== lead time = {} day'.format(lead_time))
+
 data, rt, sup_train, sup_test, output_shape = indexing(lead_time)
-ipt_train, ipt_test = preprocess(data, rt, lead_time)
+
+olr_ipt_train, olr_ipt_test = preprocess(olr_norm, rt, lead_time)
+u850_ipt_train, u850_ipt_test = preprocess(u850_norm, rt, lead_time)
+v850_ipt_train, v850_ipt_test = preprocess(v850_norm, rt, lead_time)
+u200_ipt_train, u200_ipt_test = preprocess(u200_norm, rt, lead_time)
+v200_ipt_train, v200_ipt_test = preprocess(v200_norm, rt, lead_time)
+h850_ipt_train, h850_ipt_test = preprocess(h850_norm, rt, lead_time)
+pr_wtr_ipt_train, pr_wtr_ipt_test = preprocess(pr_wtr_norm, rt, lead_time)
+
+ipt_train = np.concatenate([olr_ipt_train, u850_ipt_train,
+                            v850_ipt_train, u200_ipt_train, v200_ipt_train, h850_ipt_train, pr_wtr_ipt_train
+                            ], 3)
+ipt_test  = np.concatenate([olr_ipt_test, u850_ipt_test, 
+                            v850_ipt_test, u200_ipt_test, v200_ipt_test, h850_ipt_test, pr_wtr_ipt_test
+                            ], 3)
+print(ipt_train.shape, ipt_test.shape)
+
 
 model = cnn_model()
 model.compile(optimizer=Adam(), loss='mean_squared_error')
