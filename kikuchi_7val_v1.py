@@ -154,7 +154,7 @@ for lead_time in lt_box:
 
   print('==== lead time : {} day ====='.format(lead_time))
 
-  data, rt, sup_train, sup_test, output_shape = indexing(lead_time)
+  data, rt, sup_train, sup_test, output_shape = indexing(lead_time) 
 
   olr_ipt_train, olr_ipt_test = preprocess(olr_norm, rt, lead_time)
   u850_ipt_train, u850_ipt_test = preprocess(u850_norm, rt, lead_time)
