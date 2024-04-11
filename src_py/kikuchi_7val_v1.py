@@ -139,7 +139,7 @@ def learning_curve(history, lead_time):
   plt.figure(figsize=(8, 6))
   plt.plot(history.history['loss'], label='Training Loss')
   plt.plot(history.history['val_loss'], label='Validation Loss')    #Validation loss : 精度検証データにおける損失
-  plt.xlim(0, 300)
+  plt.xlim(0, 200)
   plt.ylim(0, 1.5)
   plt.xlabel('Epoch')
   plt.ylabel('Loss')
@@ -150,7 +150,7 @@ def learning_curve(history, lead_time):
 
 
 # ==== iteration program ====
-lt_box = [0, 10, 15, 20, 25, 30, 35]
+lt_box = [15, 20, 25, 30, 35]
 for lead_time in lt_box:
 
   print('==== lead time : {} day ====='.format(lead_time))
@@ -176,7 +176,7 @@ for lead_time in lt_box:
 
   model = cnn_model()
   model.compile(optimizer=Adam(), loss='mean_squared_error')
-  history = model.fit(ipt_train, sup_train, epochs=300, batch_size=128, validation_data=(ipt_test, sup_test))
+  history = model.fit(ipt_train, sup_train, epochs=200, batch_size=128, validation_data=(ipt_test, sup_test))
   predict = model.predict(ipt_test, batch_size=None, verbose=0, steps=None) # モデルの出力を獲得する
   print(predict.shape)
   y_test = sup_test
