@@ -175,13 +175,13 @@ for lead_time in lt_box:
 
   model = cnn_model()
   model.compile(optimizer=Adam(), loss='mean_squared_error')
-  history = model.fit(ipt_train, sup_train, epochs=300, batch_size=128, validation_data=(ipt_test, sup_test))
+  history = model.fit(ipt_train, sup_train, epochs=10, batch_size=128, validation_data=(ipt_test, sup_test))
   predict = model.predict(ipt_test, batch_size=None, verbose=0, steps=None) # モデルの出力を獲得する
   print(predict.shape)
   y_test = sup_test
   culc_cor(predict, y_test, lead_time)
   learning_curve(history, lead_time)
-  np.savez('/home/maeda/machine_learning/results/kikuchi-7vals_v1/predict/result-value_7vals_' + str(lead_time) + 'day.npz', predict, y_test)
+  np.savez('/home/maeda/machine_learning/results/kikuchi-7vals_v1/cor/result-value_7vals_' + str(lead_time) + 'day.npz', predict, y_test)
   model.save('/home/maeda/machine_learning/results/model/kikuchi-7vals_v1/model_7vals_' + str(lead_time) + 'day.hdf5')
 
 print('==== Finish! ====')
