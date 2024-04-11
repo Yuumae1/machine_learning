@@ -176,7 +176,7 @@ for lead_time in lt_box:
 
   model = cnn_model()
   model.compile(optimizer=Adam(), loss='mean_squared_error')
-  history = model.fit(ipt_train, sup_train, epochs=10, batch_size=128, validation_data=(ipt_test, sup_test))
+  history = model.fit(ipt_train, sup_train, epochs=300, batch_size=128, validation_data=(ipt_test, sup_test))
   predict = model.predict(ipt_test, batch_size=None, verbose=0, steps=None) # モデルの出力を獲得する
   print(predict.shape)
   y_test = sup_test
