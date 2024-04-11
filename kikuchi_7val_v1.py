@@ -123,7 +123,7 @@ def cnn_model():
   model.add(Dropout(0.2)) 
 
   model.add(Flatten())  # 一次元の配列に変換                                # 1*16*64 -> 1024
-  model.add(Dense(128))
+  model.add(Dense(64))
   model.add(Activation('relu'))
   #model.add(Dense(64))
   model.add(Dense(2, activation='linear'))
