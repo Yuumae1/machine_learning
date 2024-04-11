@@ -144,12 +144,13 @@ def learning_curve(history, lead_time):
   plt.ylabel('Loss')
   plt.title('Loss vs. Epoch   Lead Time = ' + str(lead_time) + 'days')
   plt.legend()
-  plt.savefig('/home/maeda/machine_learning/results/kikuchi-7vals_v1/learning_curve_7vals_' + str(lead_time) + 'day.png')
+  plt.savefig('/home/maeda/machine_learning/results/kikuchi-7vals_v1/learning_curve/7vals_' + str(lead_time) + 'day.png')
   plt.close()
 
 
 # ==== iteration program ====
-for lead_time in range(35):
+lt_box = [0, 1, 3, 5, 10, 15, 20, 25, 30, 35]
+for lead_time in lt_box:
 
   print('==== lead time : {} day ====='.format(lead_time))
 
@@ -180,7 +181,7 @@ for lead_time in range(35):
   y_test = sup_test
   culc_cor(predict, y_test, lead_time)
   learning_curve(history, lead_time)
-  np.savez('/home/maeda/machine_learning/results/kikuchi-7vals_v1/result-value_7vals_' + str(lead_time) + 'day.npz', predict, y_test)
-  model.save('/home/maeda/machine_learning/results/kikuchi-7vals_v1/model_7vals_' + str(lead_time) + 'day.hdf5')
+  np.savez('/home/maeda/machine_learning/results/kikuchi-7vals_v1/predict/result-value_7vals_' + str(lead_time) + 'day.npz', predict, y_test)
+  model.save('/home/maeda/machine_learning/results/model/kikuchi-7vals_v1/model_7vals_' + str(lead_time) + 'day.hdf5')
 
 print('==== Finish! ====')
