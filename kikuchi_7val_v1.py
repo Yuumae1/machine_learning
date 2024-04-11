@@ -120,7 +120,7 @@ def cnn_model():
   model.add(Conv2D(128, (2, 2), padding='same', strides=(2,2)))                           
   model.add(LayerNormalization())
   model.add(Activation('relu'))
-  model.add(Dropout(0.2)) 
+  #model.add(Dropout(0.2)) 
 
   model.add(Flatten())  # 一次元の配列に変換                                # 1*16*64 -> 1024
   model.add(Dense(64))
