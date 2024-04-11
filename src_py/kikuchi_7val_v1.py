@@ -123,7 +123,7 @@ def cnn_model():
   model.add(Dropout(0.2)) 
 
   model.add(Flatten())  # 一次元の配列に変換                                # 1*16*64 -> 1024
-  model.add(Dense(64))
+  model.add(Dense(128))
   model.add(Activation('relu'))
   #model.add(Dense(64))
   model.add(Dense(2, activation='linear'))
@@ -140,6 +140,7 @@ def learning_curve(history, lead_time):
   plt.plot(history.history['loss'], label='Training Loss')
   plt.plot(history.history['val_loss'], label='Validation Loss')    #Validation loss : 精度検証データにおける損失
   plt.xlim(0, 300)
+  plt.ylim(0, 1.5)
   plt.xlabel('Epoch')
   plt.ylabel('Loss')
   plt.title('Loss vs. Epoch   Lead Time = ' + str(lead_time) + 'days')
@@ -149,7 +150,7 @@ def learning_curve(history, lead_time):
 
 
 # ==== iteration program ====
-lt_box = [0, 1, 3, 5, 10, 15, 20, 25, 30, 35]
+lt_box = [0, 1, 3, 5]
 for lead_time in lt_box:
 
   print('==== lead time : {} day ====='.format(lead_time))
