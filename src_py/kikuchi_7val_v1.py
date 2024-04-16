@@ -25,14 +25,14 @@ print('data = ', data.files)
 
 lat = data['lat'][24:49]
 lon = data['lon']
-olr = data['olr'][80:-435,24:49,:]
-u850 = data['u850'][80:-435,24:49,:]
-v850 = data['v850'][80:-435,24:49,:]
-u200 = data['u200'][80:-435,24:49,:]
-v200 = data['v200'][80:-435,24:49,:]
-h850 = data['h850'][80:-435,24:49,:]
-pr_wtr = data['pr_wtr'][80:-435,24:49,:]
-time = data['time'][80:-435]    # 射影後にデータが10日進むため、時刻の方を前進させておく
+olr = data['olr'][80:,24:49,:]
+u850 = data['u850'][80:,24:49,:]
+v850 = data['v850'][80:,24:49,:]
+u200 = data['u200'][80:,24:49,:]
+v200 = data['v200'][80:,24:49,:]
+h850 = data['h850'][80:,24:49,:]
+pr_wtr = data['pr_wtr'][80:,24:49,:]
+time = data['time'][80:]    # 射影後にデータが10日進むため、時刻の方を前進させておく
 real_time = pd.to_datetime(time, unit='h', origin=pd.Timestamp('1800-01-01')) # 時刻をdatetime型に変換
 print(lat.shape, lon.shape, olr.shape, u850.shape, v850.shape, u200.shape, v200.shape, h850.shape, pr_wtr.shape)
 print(real_time[0], real_time[-1])
@@ -49,9 +49,9 @@ def normalization(data):
 
 olr_norm  = normalization(olr)
 u850_norm = normalization(u850)
-v850_norm = normalization(v850)
+#v850_norm = normalization(v850)
 u200_norm = normalization(u200)
-v200_norm = normalization(v200)
+#v200_norm = normalization(v200)
 h850_norm = normalization(h850)
 pr_wtr_norm = normalization(pr_wtr)
 
@@ -109,7 +109,7 @@ def preprocess(data, rt, lead_time):
 def cnn_model():
   model = Sequential()
   # 入力画像　25×144×3 ：(緯度方向の格子点数)×(軽度方向の格子点数)×(チャンネル数、OLRのラグ)
-  model.add(Conv2D(32, (3, 3), padding='same', input_shape=(25, 144, 3*1), strides=(2,2), kernel_regularizer=l2(0.01)))   
+  model.add(Conv2D(32, (3, 3), padding='same', input_shape=(25, 144, 3*5), strides=(2,2), kernel_regularizer=l2(0.01)))   
   model.add(BatchNormalization())
   model.add(Activation('relu'))                                           
   model.add(Conv2D(64, (2, 2), padding='same', strides=(2,2)))                                        
@@ -143,7 +143,7 @@ def learning_curve(history, lead_time):
   plt.ylabel('Loss')
   plt.title('Loss vs. Epoch   Lead Time = ' + str(lead_time) + 'days')
   plt.legend()
-  plt.savefig('/home/maeda/machine_learning/results/kikuchi-7vals_v1/learning_curve/olr/7vals_' + str(lead_time) + 'day.png')
+  plt.savefig('/home/maeda/machine_learning/results/kikuchi-7vals_v1/learning_curve/olr-u-h850-prw/7vals_' + str(lead_time) + 'day.png')
   plt.close()
 
 
@@ -157,19 +157,19 @@ for lead_time in lt_box:
   data, rt, sup_train, sup_test, output_shape = indexing(lead_time) 
 
   olr_ipt_train, olr_ipt_test = preprocess(olr_norm, rt, lead_time)
-  #u850_ipt_train, u850_ipt_test = preprocess(u850_norm, rt, lead_time)
+  u850_ipt_train, u850_ipt_test = preprocess(u850_norm, rt, lead_time)
   #v850_ipt_train, v850_ipt_test = preprocess(v850_norm, rt, lead_time)
-  #u200_ipt_train, u200_ipt_test = preprocess(u200_norm, rt, lead_time)
+  u200_ipt_train, u200_ipt_test = preprocess(u200_norm, rt, lead_time)
   #v200_ipt_train, v200_ipt_test = preprocess(v200_norm, rt, lead_time)
-  #h850_ipt_train, h850_ipt_test = preprocess(h850_norm, rt, lead_time)
-  #pr_wtr_ipt_train, pr_wtr_ipt_test = preprocess(pr_wtr_norm, rt, lead_time)
+  h850_ipt_train, h850_ipt_test = preprocess(h850_norm, rt, lead_time)
+  pr_wtr_ipt_train, pr_wtr_ipt_test = preprocess(pr_wtr_norm, rt, lead_time)
 
-  #ipt_train = np.concatenate([olr_ipt_train, u850_ipt_train,
-  #                            v850_ipt_train, u200_ipt_train, v200_ipt_train, h850_ipt_train, pr_wtr_ipt_train
-  #                            ], 3)
-  #ipt_test  = np.concatenate([olr_ipt_test, u850_ipt_test, 
-  #                            #v850_ipt_test, u200_ipt_test, v200_ipt_test, h850_ipt_test, pr_wtr_ipt_test
-  #                            ], 3)
+  ipt_train = np.concatenate([olr_ipt_train, u850_ipt_train,  u200_ipt_train,
+  #                            v850_ipt_train, v200_ipt_train, 
+                               h850_ipt_train, pr_wtr_ipt_train], 3)
+  ipt_test  = np.concatenate([olr_ipt_test, u850_ipt_test,  u200_ipt_test,
+  #                            #v850_ipt_test, v200_ipt_test, 
+                              h850_ipt_test, pr_wtr_ipt_test], 3)
   ipt_train = olr_ipt_train
   ipt_test = olr_ipt_test
   print(ipt_train.shape, ipt_test.shape)
@@ -183,7 +183,7 @@ for lead_time in lt_box:
   y_test = sup_test
   culc_cor(predict, y_test, lead_time)
   learning_curve(history, lead_time)
-  np.savez('/home/maeda/machine_learning/results/kikuchi-7vals_v1/cor/olr/result-value_7vals_' + str(lead_time) + 'day.npz', predict, y_test)
-  model.save('/home/maeda/machine_learning/results/model/kikuchi-7vals_v1/olr/model_7vals_' + str(lead_time) + 'day.hdf5')
+  np.savez('/home/maeda/machine_learning/results/kikuchi-7vals_v1/cor/olr-u-h850-prw/result-value_7vals_' + str(lead_time) + 'day.npz', predict, y_test)
+  model.save('/home/maeda/machine_learning/results/model/kikuchi-7vals_v1/olr-u-h850-prw/model_7vals_' + str(lead_time) + 'day.hdf5')
 
 print('==== Finish! ====')
