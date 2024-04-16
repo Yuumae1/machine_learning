@@ -73,9 +73,9 @@ def indexing(lead_time):
   rt = real_time2[:-lead_time-1]
   sup_data = PC_norm[lead_time:]
   print(sup_data.shape)
-  idx = np.where((rt.year <= 2014))[0]
+  idx = np.where((rt.year <= 2015))[0]
   sup_train = sup_data[idx]
-  idx = np.where((rt.year > 2014))[0]
+  idx = np.where((rt.year > 2015))[0]
   sup_test = sup_data[idx]
   print(sup_test.shape, sup_train.shape)
   return data, rt, sup_train, sup_test, output_shape
