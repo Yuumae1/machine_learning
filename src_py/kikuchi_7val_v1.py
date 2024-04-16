@@ -87,14 +87,14 @@ def preprocess(data, rt, lead_time):
   ipt_lag10 = data[:-lead_time-11]
   # =========
   # 訓練データの作成(通年データとする)
-  idx = np.where((rt.year <= 2014))[0]
+  idx = np.where((rt.year <= 2015))[0]
   ipt_lag0_train = ipt_lag0[idx]
   ipt_lag5_train = ipt_lag5[idx]
   ipt_lag10_train = ipt_lag10[idx]
   ipt_train = np.stack([ipt_lag0_train, ipt_lag5_train, ipt_lag10_train], 3)
 
   # 検証データの作成
-  idx = np.where((rt.year > 2014))[0]
+  idx = np.where((rt.year > 2015))[0]
   ipt_lag0_test = ipt_lag0[idx]
   ipt_lag5_test = ipt_lag5[idx]
   ipt_lag10_test = ipt_lag10[idx]
@@ -148,8 +148,8 @@ def learning_curve(history, lead_time):
 
 
 # ==== iteration program ====
-#lt_box = [0, 1, 3, 5, 10, 15, 20, 25, 30, 35]
-lt_box = [10, 30]
+lt_box = [0, 1, 3, 5, 10, 15, 20, 25, 30, 35]
+#lt_box = [10, 30]
 for lead_time in lt_box:
 
   print('==== lead time : {} day ====='.format(lead_time))
@@ -170,8 +170,8 @@ for lead_time in lt_box:
   ipt_test  = np.concatenate([olr_ipt_test, u850_ipt_test,  u200_ipt_test,
   #                            #v850_ipt_test, v200_ipt_test, 
                               h850_ipt_test, pr_wtr_ipt_test], 3)
-  ipt_train = olr_ipt_train
-  ipt_test = olr_ipt_test
+  #ipt_train = olr_ipt_train
+  #ipt_test = olr_ipt_test
   print(ipt_train.shape, ipt_test.shape)
 
 
