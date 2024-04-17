@@ -153,7 +153,7 @@ for num in range(number):
 
   with tf.GradientTape() as tape:
       pred = model(images, training=False)  # 入力した img に対する推論結果（PC1, PC2)
-      loss = tf.keras.losses.mean_squared_error(sup_test[num,0], pred[num,0])  # PC1, PC2 の指定を行うこと!!!
+      loss = tf.keras.losses.mean_squared_error(sup_test[num,:], pred[:,:])  # PC1, PC2 の指定を行うこと!!!
 
   grads[num] = tape.gradient(loss, images)   # dy_dx = tape.gradient(y, x)
   if num % 100 == 0:
