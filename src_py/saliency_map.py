@@ -141,7 +141,7 @@ model_path = '/home/maeda/machine_learning/results/model/kikuchi-7vals_v1/olr-u-
 model = load_model(model_path)
 
 print('===== Culicurating Gradient =====')
-number = 200
+number = len(ipt_test[0])
 grads = np.zeros((number, 25, 144, 3*5))
 
 for num in range(number):
@@ -182,8 +182,8 @@ for jj in range(5):
     x, y = np.meshgrid(lon-180.0, lat) # 経度、緯度データ
     cntr = ax.pcolormesh(x, y, grads[0,:,:,3*jj+cc], vmax=0.002, vmin=-0.002, cmap='RdBu_r')
     cbar = fig.colorbar(cntr, ticks = np.linspace(-0.002, 0.002, 6), orientation='vertical')
-    ax.set_title('Saliency Map  ' + str(name_box[jj]))
+    ax.set_title('Gradient Map (STD)  ' + str(name_box[jj]))
     ax.axis((-180, 180, -30, 30))
-  plt.savefig('/home/maeda/machine_learning/results/kikuchi-7vals_v1/saliency-map/5vals/saliency_map_lt0_' + str(name_box[jj]) + '.png')
+  plt.savefig('/home/maeda/machine_learning/results/kikuchi-7vals_v1/saliency-map/5vals/gradient-all_std_lt0_' + str(name_box[jj]) + '.png')
   
 print('===== FINISH =====')
