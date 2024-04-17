@@ -160,7 +160,7 @@ for num in range(number):
         print('num = ', num)
 print('(PC1, PC2) = ', sup_test[num])
 print('shape = ', grads.shape)
-np.savez('/home/maeda/machine_learning/results/kikuchi-7vals_v1/saliency-map/5vals/grads_0day.npz', grads=grads)
+#np.savez('/home/maeda/machine_learning/results/kikuchi-7vals_v1/saliency-map/5vals/grads_0day.npz', grads=grads)
 
 print('===== Drawing Pictures =====')
 grads = grads.mean(axis=0, keepdims=True)
