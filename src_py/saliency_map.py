@@ -184,6 +184,6 @@ for jj in range(5):
     cbar = fig.colorbar(cntr, ticks = np.linspace(-0.002, 0.002, 6), orientation='vertical')
     ax.set_title('Saliency Map  ' + str(name_box[jj]))
     ax.axis((-180, 180, -30, 30))
-  ax.savefig('/home/maeda/machine_learning/results/kikuchi-7vals_v1/saliency-map/5vals/saliency_map_lt0_' + str(name_box[jj]) + '.png')
+  plt.savefig('/home/maeda/machine_learning/results/kikuchi-7vals_v1/saliency-map/5vals/saliency_map_lt0_' + str(name_box[jj]) + '.png')
   
   print('===== FINISH =====')
