@@ -158,14 +158,14 @@ for mm in range(12):
 
         with tf.GradientTape() as tape:
             pred = model(images, training=False)  # 入力した img に対する推論結果（PC1, PC2)
-            loss = tf.keras.losses.mean_squared_error(sup_test[num,:], pred[:,:])  # PC1, PC2 の指定を行うこと!!!
+            loss = tf.keras.losses.mean_squared_error(sup_test[num,0], pred[:,0])  # PC1, PC2 の指定を行うこと!!!
 
         grads[num] = tape.gradient(loss, images)   # dy_dx = tape.gradient(y, x)
         
     print('month = ', month[mm])
     #print('(PC1, PC2) = ', sup_test[num])
     print('shape = ', grads.shape)
-    np.savez('/home/maeda/machine_learning/results/kikuchi-7vals_v1/saliency-map/5vals/grads_0day_' + str(month[mm]) + '.npz', grads=grads)
+    np.savez('/home/maeda/machine_learning/results/kikuchi-7vals_v1/saliency-map/5vals/grads_0day_pc1-' + str(month[mm]) + '.npz', grads=grads)
 
 #print('===== Drawing Pictures =====')
 #grad_std = grads.std(axis=0)
