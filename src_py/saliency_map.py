@@ -162,9 +162,9 @@ for mm in range(12):
 
         grads[num] = tape.gradient(loss, images)   # dy_dx = tape.gradient(y, x)
         
-        print('month = ', month[mm])
-        print('(PC1, PC2) = ', sup_test[num])
-        print('shape = ', grads.shape)
+    print('month = ', month[mm])
+    #print('(PC1, PC2) = ', sup_test[num])
+    print('shape = ', grads.shape)
     np.savez('/home/maeda/machine_learning/results/kikuchi-7vals_v1/saliency-map/5vals/grads_0day_' + str(month[mm]) + '.npz', grads=grads)
 
 #print('===== Drawing Pictures =====')
