@@ -165,7 +165,7 @@ for mm in range(12):
     print('month = ', month[mm])
     #print('(PC1, PC2) = ', sup_test[num])
     print('shape = ', grads.shape)
-    np.savez('/home/maeda/machine_learning/results/kikuchi-7vals_v1/saliency-map/5vals/grads_0day_pc1-' + str(month[mm]) + '.npz', grads=grads)
+    np.savez('/home/maeda/machine_learning/results/kikuchi-7vals_v1/saliency-map/lt-0day/grads_0day_pc1-' + str(month[mm]) + '.npz', grads=grads)
 
 #print('===== Drawing Pictures =====')
 #grad_std = grads.std(axis=0)
