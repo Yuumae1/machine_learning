@@ -163,7 +163,7 @@ print('shape = ', grads.shape)
 #np.savez('/home/maeda/machine_learning/results/kikuchi-7vals_v1/saliency-map/5vals/grads_0day.npz', grads=grads)
 
 print('===== Drawing Pictures =====')
-grad_std = grads.mean(axis=0, keepdims=True)
+grad_std = grads.std(axis=0, keepdims=False)
 name_box = ['OLR', 'U850', 'U200', 'H850', 'Precipitable Water']
 lag_box = ['day-0', 'day-5', 'day-10']
 for jj in range(5):
