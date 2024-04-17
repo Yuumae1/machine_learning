@@ -153,7 +153,7 @@ for num in range(number):
 
   with tf.GradientTape() as tape:
       pred = model(images, training=False)  # 入力した img に対する推論結果（PC1, PC2)
-      loss = tf.keras.losses.mean_squared_error(sup_test[num,0], pred[:,0])  # PC1, PC2 の指定を行うこと!!!
+      loss = tf.keras.losses.mean_squared_error(sup_test[num,:], pred[num,:])  # PC1, PC2 の指定を行うこと!!!
 
   grads[num] = tape.gradient(loss, images)   # dy_dx = tape.gradient(y, x)
   if num % 100 == 0:
@@ -163,27 +163,33 @@ print('shape = ', grads.shape)
 #np.savez('/home/maeda/machine_learning/results/kikuchi-7vals_v1/saliency-map/5vals/grads_0day.npz', grads=grads)
 
 print('===== Drawing Pictures =====')
-grads = grads.mean(axis=0, keepdims=True)
+grad_std = grads.mean(axis=0, keepdims=True)
 name_box = ['OLR', 'U850', 'U200', 'H850', 'Precipitable Water']
 lag_box = ['day-0', 'day-5', 'day-10']
 for jj in range(5):
-  fig = plt.figure(figsize=(16,7))
-  for cc in range(3):
-    ax=fig.add_subplot(5,1,cc+1, projection=ccrs.PlateCarree(central_longitude=180))
-    ax.set_extent([-180, 180, -30, 30], crs=ccrs.PlateCarree())
-    gl = ax.gridlines(crs=ccrs.PlateCarree(), draw_labels=True)
-    gl.top_labels = False     # 上部の経度のラベルを消去
-    gl.xlocator = mticker.FixedLocator(np.arange(-180, 180, 30)) # 経度線
-    gl.ylocator = mticker.FixedLocator(np.arange(-30, 30, 10)) # 緯度線
-    ax.coastlines()
+    fig = plt.figure(figsize=(12,5))
+    for cc in range(3):
+        ax=fig.add_subplot(3,1,cc+1, projection=ccrs.PlateCarree(central_longitude=180))
+        # 上下の余白を調整
+        plt.subplots_adjust(hspace=0)
+        ax.set_extent([-180, 180, -30, 30], crs=ccrs.PlateCarree())
+        gl = ax.gridlines(crs=ccrs.PlateCarree(), draw_labels=True)
+        gl.top_labels = False     # 上部の経度のラベルを消去
+        if cc != 2:
+            gl.bottom_labels = False
+        gl.xlocator = mticker.FixedLocator(np.arange(-180, 180, 30)) # 経度線
+        gl.ylocator = mticker.FixedLocator(np.arange(-30, 30, 10)) # 緯度線
+        ax.coastlines(color='gray')
 
-    lon = np.linspace(0, 360, 144)
-    lat = np.linspace(30, -30, 25)
-    x, y = np.meshgrid(lon-180.0, lat) # 経度、緯度データ
-    cntr = ax.pcolormesh(x, y, grads[0,:,:,3*jj+cc], vmax=0.002, vmin=-0.002, cmap='RdBu_r')
-    cbar = fig.colorbar(cntr, ticks = np.linspace(-0.002, 0.002, 6), orientation='vertical')
-    ax.set_title('Gradient Map (STD)  ' + str(name_box[jj]))
-    ax.axis((-180, 180, -30, 30))
-  plt.savefig('/home/maeda/machine_learning/results/kikuchi-7vals_v1/saliency-map/5vals/gradient-all_std_lt0_' + str(name_box[jj]) + '.png')
+        lon = np.linspace(0, 360, 144)
+        lat = np.linspace(30, -30, 25)
+        x, y = np.meshgrid(lon-180.0, lat) # 経度、緯度データ
+        cntr = ax.pcolormesh(x, y, grad_std[:,:,3*jj+cc], vmax=0.002, vmin=0, cmap='magma')
+        cbar = fig.colorbar(cntr,ticks = np.linspace(0, 0.002, 6), extend='both', orientation='vertical', shrink=0.9)
+        ax.text(140, 24, lag_box[cc-1], fontsize=16, ha='left', va='center', bbox=dict(facecolor='w', edgecolor='w', boxstyle='round,pad=0.1', alpha=0.8))
+        if cc == 0:
+            ax.set_title('Gradient Map  ' + str(name_box[jj]) + '   Lead Time = ' + str(lead_time) + 'days')
+        ax.axis((-180, 180, -30, 30))
+    plt.savefig('/home/maeda/machine_learning/results/kikuchi-7vals_v1/saliency-map/5vals/gradient-all_std_lt0_' + str(name_box[jj]) + '.png')
   
 print('===== FINISH =====')
