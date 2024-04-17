@@ -140,7 +140,8 @@ print(ipt_train.shape, ipt_test.shape)
 model_path = '/home/maeda/machine_learning/results/model/kikuchi-7vals_v1/olr-u-h850-prw/model_7vals_0day.hdf5'
 model = load_model(model_path)
 
-number = 100
+print('===== Culicurating Gradient =====')
+number = 200
 grads = np.zeros((number, 25, 144, 3*5))
 
 for num in range(number):
@@ -155,28 +156,34 @@ for num in range(number):
       loss = tf.keras.losses.mean_squared_error(sup_test[num,0], pred[:,0])  # PC1, PC2 の指定を行うこと!!!
 
   grads[num] = tape.gradient(loss, images)   # dy_dx = tape.gradient(y, x)
+  if num % 100 == 0:
+        print('num = ', num)
 print('(PC1, PC2) = ', sup_test[num])
 print('shape = ', grads.shape)
 np.savez('/home/maeda/machine_learning/results/kikuchi-7vals_v1/saliency-map/5vals/grads_0day.npz', grads=grads)
-print('===== FINISH =====')
 
-#name_box = ['OLR', 'U850', 'U200', 'H850', 'Precipitable Water']
-#for jj in range(5):
-#  fig = plt.figure(figsize=(21,7))
-#  for cc in range(3):
-#    ax=fig.add_subplot(5,1,cc+1, projection=ccrs.PlateCarree(central_longitude=180))
-#    ax.set_extent([-180, 180, -30, 30], crs=ccrs.PlateCarree())
-#    gl = ax.gridlines(crs=ccrs.PlateCarree(), draw_labels=True)
-#    gl.top_labels = False     # 上部の経度のラベルを消去
-#    gl.xlocator = mticker.FixedLocator(np.arange(-180, 180, 30)) # 経度線
-#    gl.ylocator = mticker.FixedLocator(np.arange(-30, 30, 10)) # 緯度線
-#    ax.coastlines()
-#
-#    lon = np.linspace(0, 360, 144)
-#    lat = np.linspace(30, -30, 25)
-#    x, y = np.meshgrid(lon-180.0, lat) # 経度、緯度データ
-#    cntr = ax.pcolormesh(x, y, grads[0,:,:,3*jj+cc], vmax=0.002, vmin=-0.002, cmap='RdBu_r')
-#    cbar = fig.colorbar(cntr, ticks = np.linspace(-0.002, 0.002, 6), orientation='vertical')
-#    ax.set_title('Saliency Map  ' + str(name_box[jj]))
-#    ax.axis((-180, 180, -30, 30))
-#  plt.show()
+print('===== Drawing Pictures =====')
+grads = grads.mean(axis=0, keepdims=True)
+name_box = ['OLR', 'U850', 'U200', 'H850', 'Precipitable Water']
+lag_box = ['day-0', 'day-5', 'day-10']
+for jj in range(5):
+  fig = plt.figure(figsize=(16,7))
+  for cc in range(3):
+    ax=fig.add_subplot(5,1,cc+1, projection=ccrs.PlateCarree(central_longitude=180))
+    ax.set_extent([-180, 180, -30, 30], crs=ccrs.PlateCarree())
+    gl = ax.gridlines(crs=ccrs.PlateCarree(), draw_labels=True)
+    gl.top_labels = False     # 上部の経度のラベルを消去
+    gl.xlocator = mticker.FixedLocator(np.arange(-180, 180, 30)) # 経度線
+    gl.ylocator = mticker.FixedLocator(np.arange(-30, 30, 10)) # 緯度線
+    ax.coastlines()
+
+    lon = np.linspace(0, 360, 144)
+    lat = np.linspace(30, -30, 25)
+    x, y = np.meshgrid(lon-180.0, lat) # 経度、緯度データ
+    cntr = ax.pcolormesh(x, y, grads[0,:,:,3*jj+cc], vmax=0.002, vmin=-0.002, cmap='RdBu_r')
+    cbar = fig.colorbar(cntr, ticks = np.linspace(-0.002, 0.002, 6), orientation='vertical')
+    ax.set_title('Saliency Map  ' + str(name_box[jj]))
+    ax.axis((-180, 180, -30, 30))
+  ax.savefig('/home/maeda/machine_learning/results/kikuchi-7vals_v1/saliency-map/5vals/saliency_map_lt0_' + str(name_box[jj]) + '.png')
+  
+  print('===== FINISH =====')
