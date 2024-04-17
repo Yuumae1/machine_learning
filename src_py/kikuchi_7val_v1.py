@@ -20,7 +20,7 @@ import pandas as pd
 
 
 # データの読み込み
-data = np.load('/home/maeda/data/bsiso_lee13/prepro_anomaly_7vals.npz')
+data = np.load('/home/maeda/data/bsiso_eeof/prepro_anomaly_7vals.npz')
 print('data = ', data.files)
 
 lat = data['lat'][24:49]
