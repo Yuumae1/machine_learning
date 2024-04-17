@@ -141,7 +141,7 @@ model_path = '/home/maeda/machine_learning/results/model/kikuchi-7vals_v1/olr-u-
 model = load_model(model_path)
 
 print('===== Culicurating Gradient =====')
-number = ipt_test.shape(0)
+number = ipt_test.shape[0]
 grads = np.zeros((number, 25, 144, 3*5))
 
 for num in range(number):
