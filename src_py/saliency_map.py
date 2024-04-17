@@ -145,10 +145,10 @@ print('===== Culicurating Gradient =====')
 month = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
 for mm in range(12):
-    grads = np.zeros((number, 25, 144, 3*5))
     month_idx = np.where((rt_test.month == mm+1))[0]
     ipt_test_mm = ipt_test[month_idx]
     number = ipt_test_mm.shape[0]
+    grads = np.zeros((number, 25, 144, 3*5))
     for num in range(number):
         img = keras.preprocessing.image.img_to_array(ipt_test[num])
         img = img.reshape((1, *img.shape))
@@ -165,7 +165,7 @@ for mm in range(12):
         print('month = ', month[mm])
         print('(PC1, PC2) = ', sup_test[num])
         print('shape = ', grads.shape)
-    np.savez('/home/maeda/machine_learning/results/kikuchi-7vals_v1/saliency-map/5vals/grads_0day_'+str(month[mm])+'.npz', grads=grads)
+    np.savez('/home/maeda/machine_learning/results/kikuchi-7vals_v1/saliency-map/5vals/grads_0day_' + str(month[mm]) + '.npz', grads=grads)
 
 #print('===== Drawing Pictures =====')
 #grad_std = grads.std(axis=0)
