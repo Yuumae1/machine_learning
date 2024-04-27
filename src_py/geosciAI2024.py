@@ -5,9 +5,12 @@ import pandas as pd
 from datetime import datetime
 from decimal import Decimal, ROUND_HALF_UP
 from tensorflow import keras
+from tensorflow.keras import layers
+import tensorflow as tf
+from tensorflow.keras.models import Model
 from keras.models import Sequential
 from keras.layers import Dense, Dropout, Activation, Flatten
-from keras.layers import Conv2D, BatchNormalization
+from keras.layers import Conv2D, BatchNormalization, LayerNormalization
 from keras.optimizers import Adam
 
 input_dir = '/home/maeda/data/geosciAI24/TC_data_GeoSciAI2024/'
@@ -89,13 +92,16 @@ def cnn_model():
     model = Sequential()
     # 入力画像　25×144×3 ：(緯度方向の格子点数)×(軽度方向の格子点数)×(チャンネル数、OLRのラグ)
     model.add(Conv2D(32, (2, 2), padding='same', input_shape=(64, 64, 1), strides=(2,2)))   
-    model.add(BatchNormalization())
+    #model.add(BatchNormalization())
+    model.add(LayerNormalization())
     model.add(Activation('relu'))                                           
     model.add(Conv2D(64, (2, 2), padding='same', strides=(2,2)))                                        
-    model.add(BatchNormalization())
+    #model.add(BatchNormalization())
+    model.add(LayerNormalization())
     model.add(Activation('relu'))
     model.add(Conv2D(128, (2, 2), padding='same', strides=(2,2)))                           
-    model.add(BatchNormalization())
+    #model.add(BatchNormalization())
+    model.add(LayerNormalization())
     #model.add(Conv2D(256, (2, 2), padding='same', strides=(2,2)))                           
     #model.add(BatchNormalization())
     model.add(Activation('relu'))
