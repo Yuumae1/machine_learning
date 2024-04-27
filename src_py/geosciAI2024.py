@@ -88,7 +88,7 @@ ans_valid   = (ans_valid - ans_mean) / ans_std
 def cnn_model():
     model = Sequential()
     # 入力画像　25×144×3 ：(緯度方向の格子点数)×(軽度方向の格子点数)×(チャンネル数、OLRのラグ)
-    model.add(Conv2D(32, (2, 2), padding='same', input_shape=(64, 64, 5), strides=(2,2)))   
+    model.add(Conv2D(32, (2, 2), padding='same', input_shape=(64, 64, 1), strides=(2,2)))   
     model.add(BatchNormalization())
     model.add(Activation('relu'))                                           
     model.add(Conv2D(64, (2, 2), padding='same', strides=(2,2)))                                        
