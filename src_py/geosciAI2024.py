@@ -14,8 +14,8 @@ input_dir = '/home/maeda/data/geosciAI24/TC_data_GeoSciAI2024/'
 
 def get_input_ans(start_year, end_year, n_input = 3):
     trackfiles = []
-    field = ['olr', 'qv600', 'slp', 'u200', 'u850', 'v200', 'v850']
-    FIELD = ['OLR', 'QV600', 'SLP', 'U200', 'U850', 'V200', 'V850']
+    field = ['olr', 'qv600', 'slp', 'u200', 'v200']
+    FIELD = ['OLR', 'QV600', 'SLP', 'U200', 'V200']
     for i in range(start_year, end_year+1):
         trackfiles += glob.glob(input_dir + f'track_data/{i}*.csv')
 
@@ -86,7 +86,7 @@ ans_valid   = (ans_valid - ans_mean) / ans_std
 def cnn_model():
     model = Sequential()
     # 入力画像　25×144×3 ：(緯度方向の格子点数)×(軽度方向の格子点数)×(チャンネル数、OLRのラグ)
-    model.add(Conv2D(32, (2, 2), padding='same', input_shape=(64, 64, 7), strides=(2,2)))   
+    model.add(Conv2D(32, (2, 2), padding='same', input_shape=(64, 64, 5), strides=(2,2)))   
     model.add(BatchNormalization())
     model.add(Activation('relu'))                                           
     model.add(Conv2D(64, (2, 2), padding='same', strides=(2,2)))                                        
