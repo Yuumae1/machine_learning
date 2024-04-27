@@ -14,8 +14,10 @@ input_dir = '/home/maeda/data/geosciAI24/TC_data_GeoSciAI2024/'
 
 def get_input_ans(start_year, end_year, n_input = 3):
     trackfiles = []
-    field = ['olr', 'qv600', 'slp', 'u200', 'v200']
-    FIELD = ['OLR', 'QV600', 'SLP', 'U200', 'V200']
+    #field = ['olr', 'qv600', 'slp', 'u200', 'v200']
+    #FIELD = ['OLR', 'QV600', 'SLP', 'U200', 'V200']
+    field = ['olr']
+    FIELD = ['OLR']
     for i in range(start_year, end_year+1):
         trackfiles += glob.glob(input_dir + f'track_data/{i}*.csv')
 
