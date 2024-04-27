@@ -4,7 +4,7 @@ import glob
 import pandas as pd
 from datetime import datetime
 from decimal import Decimal, ROUND_HALF_UP
-import tensorflow as tf
+from tensorflow import keras
 from keras.models import Sequential
 from keras.layers import Dense, Dropout, Activation, Flatten
 from keras.layers import Conv2D, BatchNormalization
@@ -96,15 +96,15 @@ def cnn_model():
     model.add(Activation('relu'))
     model.add(Conv2D(128, (2, 2), padding='same', strides=(2,2)))                           
     model.add(BatchNormalization())
-    model.add(Conv2D(256, (2, 2), padding='same', strides=(2,2)))                           
-    model.add(BatchNormalization())
+    #model.add(Conv2D(256, (2, 2), padding='same', strides=(2,2)))                           
+    #model.add(BatchNormalization())
     model.add(Activation('relu'))
     model.add(Dropout(0.2)) 
 
     model.add(Flatten())  # 一次元の配列に変換                                # 1*16*64 -> 1024
     model.add(Dense(128))
     model.add(Activation('relu'))
-    model.add(Dense(64))
+    #model.add(Dense(64))
     model.add(Dense(1, activation='linear'))
     model.summary()
     return model
