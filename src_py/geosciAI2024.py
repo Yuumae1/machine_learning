@@ -144,9 +144,9 @@ if __name__ == "__main__":
     if ensemble == True:
         scores = []
         predicts = []
-        seeds = [0, 1, 3, 4, 6, 7, 8, 9, 11, 12, 13]
+        seeds = []
         
-        for seed in range(10,32):
+        for seed in range(30):
             print('Seed = ', seed)
             random.set_seed(seed)  # TensorFlowのseed値を設定
             np.random.seed(seed)  
