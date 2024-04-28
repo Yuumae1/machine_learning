@@ -1,3 +1,4 @@
+import os
 import numpy as np
 import matplotlib.pyplot as plt
 import glob
@@ -90,7 +91,6 @@ ans_valid   = (ans_valid - ans_mean) / ans_std
 # CNNモデルの構築
 def cnn_model():
     model = Sequential()
-    # 入力画像　25×144×3 ：(緯度方向の格子点数)×(軽度方向の格子点数)×(チャンネル数、OLRのラグ)
     model.add(Conv2D(32, (2, 2), padding='same', input_shape=(64, 64, 1), strides=(2,2)))   
     #model.add(BatchNormalization())
     model.add(LayerNormalization())
@@ -107,7 +107,7 @@ def cnn_model():
     model.add(Activation('relu'))
     model.add(Dropout(0.2)) 
 
-    model.add(Flatten())  # 一次元の配列に変換                                # 1*16*64 -> 1024
+    model.add(Flatten())  # 一次元の配列に変換                          
     model.add(Dense(128))
     model.add(Activation('relu'))
     #model.add(Dense(64))
@@ -115,6 +115,7 @@ def cnn_model():
     model.summary()
     return model
 
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 model = cnn_model()
 model.compile(optimizer=Adam(), loss='mean_squared_error')
 history = model.fit(input_train, ans_train, epochs=100, batch_size=128, validation_data=(input_valid, ans_valid))
