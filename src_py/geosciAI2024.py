@@ -144,9 +144,10 @@ if __name__ == "__main__":
     if ensemble == True:
         scores = []
         predicts = []
-        seeds = np.arange(10)
+        seeds = [0, 1, 3, 4, 6, 7, 8, 9]
         
-        for seed in seeds:
+        for seed in range(10,30):
+            print('Seed = ', seed)
             random.set_seed(seed)  # TensorFlowのseed値を設定
             np.random.seed(seed)  
             # モデルの構築とコンパイル
@@ -184,7 +185,7 @@ if __name__ == "__main__":
     
     else:
         seed = None
-        # モデルの構築とコンパイル
+        
         model = cnn_model()
         callback = EarlyStopping(monitor='loss',patience=3)
         model.compile(optimizer=Adam(), loss='mean_squared_error')
@@ -193,15 +194,12 @@ if __name__ == "__main__":
                             callbacks=[callback])
         
         learning_curve(history, output_dir, seed, ensemble)
-        # 評価データによるテスト
         score = model.evaluate(input_test, ans_test)
         predict = model.predict(input_test, batch_size=None, verbose=0, steps=None) # モデルの出力を獲得する
         print('predict = ', predict.shape)
-        # 標準化を元に戻す
         predict = predict * ans_std + ans_mean
-        # モデルデータの保存
+        
         model.save(output_dir + f'/model/model_test.h5')
-        # 評価データの保存
         np.savez(output_dir + f'geosciAI24/predict/predict_test.npz', 
                 predict=predict, ans=ans_test, 
                 history=history.history, score=score)
