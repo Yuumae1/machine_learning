@@ -8,6 +8,7 @@ from decimal import Decimal, ROUND_HALF_UP
 from keras.models import Sequential
 from keras.layers import Dense, Dropout, Activation, Flatten
 from keras.layers import Conv2D, BatchNormalization, LayerNormalization
+from keras.regularizers import l2
 from keras.optimizers import Adam
 from keras.callbacks import EarlyStopping
 
@@ -94,14 +95,17 @@ ans_valid   = (ans_valid - ans_mean) / ans_std
 # CNNモデルの構築
 def cnn_model():
     model = Sequential()
-    model.add(Conv2D(32, (2, 2), padding='same', input_shape=(64, 64, 5), strides=(2,2)))   
+    model.add(Conv2D(32, (2, 2), padding='same', input_shape=(64, 64, 5), strides=(1,1), kernel_regularizer=l2(0.01)))   
+    model.add(Conv2D(32, (2, 2), padding='same', strides=(2,2))) 
     model.add(BatchNormalization())
     #model.add(LayerNormalization())
     model.add(Activation('relu'))                                           
+    model.add(Conv2D(64, (2, 2), padding='same', strides=(1,1)))                                        
     model.add(Conv2D(64, (2, 2), padding='same', strides=(2,2)))                                        
     model.add(BatchNormalization())
     #model.add(LayerNormalization())
     model.add(Activation('relu'))
+    model.add(Conv2D(128, (2, 2), padding='same', strides=(1,1)))                           
     model.add(Conv2D(128, (2, 2), padding='same', strides=(2,2)))                           
     model.add(BatchNormalization())
     #model.add(LayerNormalization())
