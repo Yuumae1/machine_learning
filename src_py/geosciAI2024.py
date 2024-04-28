@@ -68,17 +68,23 @@ print('Loading Data...')
 input_train, ans_train = get_input_ans(1979, 1999)
 input_valid, ans_valid = get_input_ans(2000, 2003)
 
+# 欠損値のゼロ埋め
+input_train = np.nan_to_num(input_train, nan=0)
+input_valid = np.nan_to_num(input_valid, nan=0)
+ans_train   = np.nan_to_num(ans_train, nan=0)
+ans_valid   = np.nan_to_num(ans_valid, nan=0)
+
 print('input_train = ',input_train.shape)
 print('ans_train   = ', ans_train.shape)
 print('input_valid = ', input_valid.shape)
 print('ans_valid   = ', ans_valid.shape)
 
-# 標準化処理（欠損値はゼロ埋めする）
+# 標準化処理
 print('Normalization...')
-input_std  = np.nanmean(input_train, axis=0)
-input_mean = np.nanmean(input_train, axis=0)
-ans_std    = np.nanmean(ans_train, axis=0)
-ans_mean   = np.nanmean(ans_train, axis=0)
+input_std  = np.mean(input_train, axis=0)
+input_mean = np.mean(input_train, axis=0)
+ans_std    = np.std(ans_train, axis=0)
+ans_mean   = np.std(ans_train, axis=0)
 
 input_train = (input_train - input_mean) / input_std
 input_valid = (input_valid - input_mean) / input_std
