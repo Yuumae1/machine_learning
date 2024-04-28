@@ -16,8 +16,8 @@ input_dir = '/home/maeda/data/geosciAI24/TC_data_GeoSciAI2024/'
 
 def get_input_ans(start_year, end_year, n_input = 1):
     trackfiles = []
-    field = ['olr', 'qv600', 'slp', 'u200', 'v200']
-    FIELD = ['OLR', 'QV600', 'SLP', 'U200', 'V200']
+    field = ['olr', 'qv600', 'slp', 'u200', 'u850', 'v200', 'v850']
+    FIELD = ['OLR', 'QV600', 'SLP', 'U200', 'U850', 'V200', 'V850']
     #field = ['olr']
     #FIELD = ['OLR']
     for i in range(start_year, end_year+1):
