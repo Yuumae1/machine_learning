@@ -148,8 +148,8 @@ if __name__ == "__main__":
     # 標準化を元に戻す
     predict = predict * ans_std + ans_mean
     # モデルデータの保存
-    model.save(output_dir + 'geosciAI24/model/model_test.h5')
+    model.save(output_dir + '/model/model_test.h5')
     # 評価データの保存
-    np.savez(output_dir + 'predict/predict_test.npz', 
+    np.savez(output_dir + 'geosciAI24/predict/predict_test.npz', 
              predict=predict, ans=ans_test, 
              history=history.history, score=score)
