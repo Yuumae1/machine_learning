@@ -5,9 +5,10 @@ import glob
 import pandas as pd
 from datetime import datetime
 from decimal import Decimal, ROUND_HALF_UP
+from tensorflow import random
 from keras.models import Sequential
 from keras.layers import Dense, Dropout, Activation, Flatten
-from keras.layers import Conv2D, BatchNormalization, LayerNormalization
+from keras.layers import Conv2D, BatchNormalization
 from keras.regularizers import l2
 from keras.optimizers import Adam
 from keras.callbacks import EarlyStopping
@@ -15,6 +16,8 @@ from keras.callbacks import EarlyStopping
 input_dir1 = '/home/maeda/data/geosciAI24/TC_data_GeoSciAI2024/'
 input_dir2 = '/home/maeda/data/geosciAI24/TC_data_GeoSciAI2024_test/'
 output_dir = '/home/maeda/machine_learning/results/'
+
+ensemble = True
 
 def get_input_ans(start_year, end_year, input_dir, n_input = 1):
     trackfiles = []
@@ -95,7 +98,7 @@ def cnn_model():
     return model
 
 # 学習曲線の描画
-def learning_curve(history, output_dir):
+def learning_curve(history, output_dir, seed, ensemble):
     plt.figure(figsize=(6, 4))
     plt.plot(history.history['loss'], label='Training Loss')
     plt.plot(history.history['val_loss'], label='Validation Loss')    #Validation loss : 精度検証データにおける損失
@@ -105,7 +108,10 @@ def learning_curve(history, output_dir):
     plt.ylabel('Loss')
     plt.title('Loss vs. Epoch')
     plt.legend()
-    plt.savefig(output_dir + 'geosciAI24/l_curve/test.png')
+    if ensemble == True:
+        plt.savefig(output_dir + f'geosciAI24/l_curve/predict{(seed):03}.png')
+    else:
+        plt.savefig(output_dir + 'geosciAI24/l_curve/predict.png')
     plt.close()
 
 
@@ -135,24 +141,68 @@ if __name__ == "__main__":
 
     os.environ["CUDA_VISIBLE_DEVICES"] = "0"
     
-    # モデルの構築とコンパイル
-    model = cnn_model()
-    callback = EarlyStopping(monitor='loss',patience=3)
-    model.compile(optimizer=Adam(), loss='mean_squared_error')
-    history = model.fit(input_train, ans_train, epochs=50, batch_size=64, 
-                        validation_data=(input_valid, ans_valid), 
-                        callbacks=[callback])
+    if ensemble == True:
+        scores = []
+        predicts = []
+        seeds = np.arange(10)
+        
+        for seed in seeds:
+            random.set_seed(seed)  # TensorFlowのseed値を設定
+            np.random.seed(seed)  
+            # モデルの構築とコンパイル
+            model = cnn_model()
+            callback = EarlyStopping(monitor='loss',patience=3)
+            model.compile(optimizer=Adam(), loss='mean_squared_error')
+            history = model.fit(input_train, ans_train, epochs=50, batch_size=64, 
+                                validation_data=(input_valid, ans_valid), 
+                                callbacks=[callback])
+            
+            learning_curve(history, output_dir, seed, ensemble)
+            # 評価データによるテスト
+            score = model.evaluate(input_test, ans_test)
+            predict = model.predict(input_test, batch_size=None, verbose=0, steps=None) # モデルの出力を獲得する
+            print('predict = ', predict.shape)
+            # 標準化を元に戻す
+            predict = predict * ans_std + ans_mean
+            # モデルデータの保存
+            model.save(output_dir + f'/model/model_test{(seed):03}.h5')
+            # 評価データの保存
+            np.savez(output_dir + f'geosciAI24/predict/predict_test{(seed):03}.npz', 
+                    predict=predict, ans=ans_test, 
+                    history=history.history, score=score)
+            
+            scores.append(score)
+            predicts.append(predict)
+        
+        scores = np.array(scores)
+        predicts = np.array(predicts)
+        print('scores = ', scores)
+        print('mean score, std score = ', np.mean(scores), np.std(scores))
+        
+        np.savez(output_dir + 'geosciAI24/predict/predict_ensemble.npz', 
+                    seeds=seeds, predict=predicts, ans=ans_test, score=scores)
     
-    learning_curve(history, output_dir)
-    # 評価データによるテスト
-    score = model.evaluate(input_test, ans_test)
-    predict = model.predict(input_test, batch_size=None, verbose=0, steps=None) # モデルの出力を獲得する
-    print('predict = ', predict.shape)
-    # 標準化を元に戻す
-    predict = predict * ans_std + ans_mean
-    # モデルデータの保存
-    model.save(output_dir + '/model/model_test.h5')
-    # 評価データの保存
-    np.savez(output_dir + 'geosciAI24/predict/predict_test.npz', 
-             predict=predict, ans=ans_test, 
-             history=history.history, score=score)
+    else:
+        seed = None
+        # モデルの構築とコンパイル
+        model = cnn_model()
+        callback = EarlyStopping(monitor='loss',patience=3)
+        model.compile(optimizer=Adam(), loss='mean_squared_error')
+        history = model.fit(input_train, ans_train, epochs=50, batch_size=64, 
+                            validation_data=(input_valid, ans_valid), 
+                            callbacks=[callback])
+        
+        learning_curve(history, output_dir, seed, ensemble)
+        # 評価データによるテスト
+        score = model.evaluate(input_test, ans_test)
+        predict = model.predict(input_test, batch_size=None, verbose=0, steps=None) # モデルの出力を獲得する
+        print('predict = ', predict.shape)
+        # 標準化を元に戻す
+        predict = predict * ans_std + ans_mean
+        # モデルデータの保存
+        model.save(output_dir + f'/model/model_test.h5')
+        # 評価データの保存
+        np.savez(output_dir + f'geosciAI24/predict/predict_test.npz', 
+                predict=predict, ans=ans_test, 
+                history=history.history, score=score)
+        
