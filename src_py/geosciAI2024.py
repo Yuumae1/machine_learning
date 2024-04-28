@@ -116,6 +116,7 @@ if __name__ == "__main__":
     input_test,  ans_test  = get_input_ans(2004, 2009, input_dir2)
     print('input_train, ans_train = ', input_train.shape, ans_train.shape)
     print('input_valid, ans_valid = ', input_valid.shape, ans_valid.shape)
+    print('input_test,  ans_test = ', input_test.shape, ans_test.shape)
     
     # 標準化処理
     print('Normalization...')
@@ -126,8 +127,10 @@ if __name__ == "__main__":
 
     input_train = (input_train - input_mean) / input_std
     input_valid = (input_valid - input_mean) / input_std
+    input_test  = (input_test - input_mean) / input_std
     ans_train   = (ans_train - ans_mean) / ans_std
     ans_valid   = (ans_valid - ans_mean) / ans_std
+    ans_test    = (ans_test - ans_mean) / ans_std
     print('ans_mean, ans_std = ', ans_mean, ans_std)
 
     os.environ["CUDA_VISIBLE_DEVICES"] = "0"
