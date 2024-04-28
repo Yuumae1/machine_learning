@@ -109,7 +109,7 @@ def cnn_model():
     #model.add(Conv2D(256, (2, 2), padding='same', strides=(2,2)))                           
     #model.add(BatchNormalization())
     model.add(Activation('relu'))
-    model.add(Dropout())
+    #model.add(Dropout(0.2))
 
     model.add(Flatten())  # 一次元の配列に変換                          
     model.add(Dense(128))
