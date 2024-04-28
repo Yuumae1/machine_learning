@@ -89,8 +89,8 @@ ans_mean   = np.mean(ans_train, axis=0)
 
 input_train = (input_train - input_mean) / input_std
 input_valid = (input_valid - input_mean) / input_std
-ans_train   = (ans_train - ans_mean) #/ ans_std  偏差で処理する（計算上ではRMSEは同じ）
-ans_valid   = (ans_valid - ans_mean) #/ ans_std
+ans_train   = (ans_train - ans_mean) / ans_std
+ans_valid   = (ans_valid - ans_mean) / ans_std
 print('ans_mean, ans_std = ', ans_mean, ans_std)
 
 # CNNモデルの構築
