@@ -116,6 +116,7 @@ def cnn_model():
     return model
 
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+
 model = cnn_model()
 model.compile(optimizer=Adam(), loss='mean_squared_error')
 history = model.fit(input_train, ans_train, epochs=100, batch_size=128, validation_data=(input_valid, ans_valid))
