@@ -82,10 +82,10 @@ print('ans_valid   = ', ans_valid.shape)
 
 # 標準化処理
 print('Normalization...')
-input_std  = np.mean(input_train, axis=0)
+input_std  = np.std(input_train, axis=0)
 input_mean = np.mean(input_train, axis=0)
 ans_std    = np.std(ans_train, axis=0)
-ans_mean   = np.std(ans_train, axis=0)
+ans_mean   = np.mean(ans_train, axis=0)
 
 input_train = (input_train - input_mean) / input_std
 input_valid = (input_valid - input_mean) / input_std
