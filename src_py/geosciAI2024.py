@@ -146,7 +146,7 @@ if __name__ == "__main__":
         predicts = []
         seeds = [0, 1, 3, 4, 6, 7, 8, 9]
         
-        for seed in range(10,30):
+        for seed in range(10,32):
             print('Seed = ', seed)
             random.set_seed(seed)  # TensorFlowのseed値を設定
             np.random.seed(seed)  
