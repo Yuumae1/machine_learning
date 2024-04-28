@@ -144,7 +144,7 @@ if __name__ == "__main__":
     if ensemble == True:
         scores = []
         predicts = []
-        seeds = [0, 1, 3, 4, 6, 7, 8, 9]
+        seeds = [0, 1, 3, 4, 6, 7, 8, 9, 11, 12, 13]
         
         for seed in range(10,32):
             print('Seed = ', seed)
@@ -189,7 +189,7 @@ if __name__ == "__main__":
         model = cnn_model()
         callback = EarlyStopping(monitor='loss',patience=3)
         model.compile(optimizer=Adam(), loss='mean_squared_error')
-        history = model.fit(input_train, ans_train, epochs=50, batch_size=64, 
+        history = model.fit(input_train, ans_train, epochs=30, batch_size=64, 
                             validation_data=(input_valid, ans_valid), 
                             callbacks=[callback])
         
