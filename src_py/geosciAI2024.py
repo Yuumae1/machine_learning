@@ -5,23 +5,20 @@ import glob
 import pandas as pd
 from datetime import datetime
 from decimal import Decimal, ROUND_HALF_UP
-from tensorflow import keras
-from tensorflow.keras import layers
-import tensorflow as tf
-from tensorflow.keras.models import Model
 from keras.models import Sequential
 from keras.layers import Dense, Dropout, Activation, Flatten
 from keras.layers import Conv2D, BatchNormalization, LayerNormalization
 from keras.optimizers import Adam
+from keras.callbacks import EarlyStopping
 
 input_dir = '/home/maeda/data/geosciAI24/TC_data_GeoSciAI2024/'
 
 def get_input_ans(start_year, end_year, n_input = 1):
     trackfiles = []
-    #field = ['olr', 'qv600', 'slp', 'u200', 'v200']
-    #FIELD = ['OLR', 'QV600', 'SLP', 'U200', 'V200']
-    field = ['olr']
-    FIELD = ['OLR']
+    field = ['olr', 'qv600', 'slp', 'u200', 'v200']
+    FIELD = ['OLR', 'QV600', 'SLP', 'U200', 'V200']
+    #field = ['olr']
+    #FIELD = ['OLR']
     for i in range(start_year, end_year+1):
         trackfiles += glob.glob(input_dir + f'track_data/{i}*.csv')
 
@@ -76,12 +73,12 @@ print('ans_train   = ', ans_train.shape)
 print('input_valid = ', input_valid.shape)
 print('ans_valid   = ', ans_valid.shape)
 
-# 標準化処理
+# 標準化処理（欠損値はゼロ埋めする）
 print('Normalization...')
-input_std = input_train.std(axis=0)
-input_mean = input_train.mean(axis=0)
-ans_std = ans_train.std(axis=0)
-ans_mean = ans_train.mean(axis=0)
+input_std  = np.nanmean(input_train, axis=0)
+input_mean = np.nanmean(input_train, axis=0)
+ans_std    = np.nanmean(ans_train, axis=0)
+ans_mean   = np.nanmean(ans_train, axis=0)
 
 input_train = (input_train - input_mean) / input_std
 input_valid = (input_valid - input_mean) / input_std
@@ -91,7 +88,7 @@ ans_valid   = (ans_valid - ans_mean) / ans_std
 # CNNモデルの構築
 def cnn_model():
     model = Sequential()
-    model.add(Conv2D(32, (2, 2), padding='same', input_shape=(64, 64, 1), strides=(2,2)))   
+    model.add(Conv2D(32, (2, 2), padding='same', input_shape=(64, 64, 5), strides=(2,2)))   
     model.add(BatchNormalization())
     #model.add(LayerNormalization())
     model.add(Activation('relu'))                                           
@@ -118,5 +115,6 @@ def cnn_model():
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 model = cnn_model()
+callback = EarlyStopping(monitor='loss',patience=3)
 model.compile(optimizer=Adam(), loss='mean_squared_error')
-history = model.fit(input_train, ans_train, epochs=100, batch_size=128, validation_data=(input_valid, ans_valid))
+history = model.fit(input_train, ans_train, epochs=100, batch_size=128, validation_data=(input_valid, ans_valid), callbacks=[callback])
