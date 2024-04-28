@@ -84,13 +84,14 @@ print('ans_valid   = ', ans_valid.shape)
 print('Normalization...')
 input_std  = np.mean(input_train, axis=0)
 input_mean = np.mean(input_train, axis=0)
-#ans_std    = np.std(ans_train, axis=0)
-#ans_mean   = np.std(ans_train, axis=0)
+ans_std    = np.std(ans_train, axis=0)
+ans_mean   = np.std(ans_train, axis=0)
 
 input_train = (input_train - input_mean) / input_std
 input_valid = (input_valid - input_mean) / input_std
-#ans_train   = (ans_train - ans_mean) / ans_std
-#ans_valid   = (ans_valid - ans_mean) / ans_std
+ans_train   = (ans_train - ans_mean) #/ ans_std  偏差で処理する（計算上ではRMSEは同じ）
+ans_valid   = (ans_valid - ans_mean) #/ ans_std
+print('ans_mean, ans_std = ', ans_mean, ans_std)
 
 # CNNモデルの構築
 def cnn_model():
