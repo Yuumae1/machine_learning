@@ -12,9 +12,11 @@ from keras.regularizers import l2
 from keras.optimizers import Adam
 from keras.callbacks import EarlyStopping
 
-input_dir = '/home/maeda/data/geosciAI24/TC_data_GeoSciAI2024/'
+input_dir1 = '/home/maeda/data/geosciAI24/TC_data_GeoSciAI2024/'
+input_dir2 = '/home/maeda/data/geosciAI24/TC_data_GeoSciAI2024_test/'
+output_dir = '/home/maeda/machine_learning/results/'
 
-def get_input_ans(start_year, end_year, n_input = 1):
+def get_input_ans(start_year, end_year, input_dir, n_input = 1):
     trackfiles = []
     field = ['olr', 'qv600', 'slp', 'u200', 'u850', 'v200', 'v850']
     FIELD = ['OLR', 'QV600', 'SLP', 'U200', 'U850', 'V200', 'V850']
@@ -63,64 +65,91 @@ def get_input_ans(start_year, end_year, n_input = 1):
                 
             input.append(x)
             ans.append(wind[ii+n_input+4-1])
-    return np.array(input), np.array(ans)
-
-print('Loading Data...')
-input_train, ans_train = get_input_ans(1979, 1999)
-input_valid, ans_valid = get_input_ans(2000, 2003)
-
-# 欠損値のゼロ埋め
-input_train = np.nan_to_num(input_train, nan=0)
-input_valid = np.nan_to_num(input_valid, nan=0)
-ans_train   = np.nan_to_num(ans_train, nan=0)
-ans_valid   = np.nan_to_num(ans_valid, nan=0)
-
-print('input_train = ',input_train.shape)
-print('ans_train   = ', ans_train.shape)
-print('input_valid = ', input_valid.shape)
-print('ans_valid   = ', ans_valid.shape)
-
-# 標準化処理
-print('Normalization...')
-input_std  = np.std(input_train, axis=0)
-input_mean = np.mean(input_train, axis=0)
-ans_std    = np.std(ans_train, axis=0)
-ans_mean   = np.mean(ans_train, axis=0)
-
-input_train = (input_train - input_mean) / input_std
-input_valid = (input_valid - input_mean) / input_std
-ans_train   = (ans_train - ans_mean) / ans_std
-ans_valid   = (ans_valid - ans_mean) / ans_std
-print('ans_mean, ans_std = ', ans_mean, ans_std)
+            
+    # 欠損値のゼロ埋め
+    input = np.nan_to_num(np.array(input), nan=0)
+    ans   = np.nan_to_num(np.array(ans), nan=0)
+    return input, ans
 
 # CNNモデルの構築
 def cnn_model():
     model = Sequential()
-    model.add(Conv2D(32, (2, 2), padding='same', input_shape=(64, 64, 7), strides=(2,2)))   
+    model.add(Conv2D(32, (2, 2), padding='same', input_shape=(64, 64, 7), strides=(2,2), kernel_regularizer=l2(0.001)))   
     model.add(BatchNormalization())
     model.add(Activation('relu')) 
     model.add(Dropout(0.1))                                                                            
-    model.add(Conv2D(64, (2, 2), padding='same', strides=(2,2)))                                        
+    model.add(Conv2D(64, (2, 2), padding='same', strides=(2,2), kernel_regularizer=l2(0.001)))                                        
     model.add(BatchNormalization())
     model.add(Activation('relu'))
     model.add(Dropout(0.1))                      
-    model.add(Conv2D(128, (2, 2), padding='same', strides=(2,2)))                           
-    model.add(BatchNormalization())
-    #model.add(Conv2D(256, (2, 2), padding='same', strides=(2,2)))                           
+    model.add(Conv2D(128, (2, 2), padding='same', strides=(2,2), kernel_regularizer=l2(0.001)))                           
+    model.add(BatchNormalization())                          
     model.add(Activation('relu'))
     model.add(Dropout(0.1))
 
     model.add(Flatten())  # 一次元の配列に変換                          
     model.add(Dense(128))
     model.add(Activation('relu'))
-    #model.add(Dense(64))
     model.add(Dense(1, activation='linear'))
     model.summary()
     return model
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+# 学習曲線の描画
+def learning_curve(history, output_dir):
+    plt.figure(figsize=(6, 4))
+    plt.plot(history.history['loss'], label='Training Loss')
+    plt.plot(history.history['val_loss'], label='Validation Loss')    #Validation loss : 精度検証データにおける損失
+    plt.xlim(0, 50)
+    plt.ylim(0, 1.5)
+    plt.xlabel('Epoch')
+    plt.ylabel('Loss')
+    plt.title('Loss vs. Epoch')
+    plt.legend()
+    plt.savefig(output_dir + 'geosciAI24/l_curve/test.png')
+    plt.close()
 
-model = cnn_model()
-callback = EarlyStopping(monitor='loss',patience=3)
-model.compile(optimizer=Adam(), loss='mean_squared_error')
-history = model.fit(input_train, ans_train, epochs=100, batch_size=64, validation_data=(input_valid, ans_valid), callbacks=[callback])
+
+if __name__ == "__main__": 
+    print('Loading Data...')
+    input_train, ans_train = get_input_ans(1979, 1999, input_dir1)
+    input_valid, ans_valid = get_input_ans(2000, 2003, input_dir1)
+    input_test,  ans_test  = get_input_ans(2004, 2009, input_dir2)
+    print('input_train, ans_train = ', input_train.shape, ans_train.shape)
+    print('input_valid, ans_valid = ', input_valid.shape, ans_valid.shape)
+    
+    # 標準化処理
+    print('Normalization...')
+    input_std  = np.std(input_train, axis=0)
+    input_mean = np.mean(input_train, axis=0)
+    ans_std    = np.std(ans_train, axis=0)
+    ans_mean   = np.mean(ans_train, axis=0)
+
+    input_train = (input_train - input_mean) / input_std
+    input_valid = (input_valid - input_mean) / input_std
+    ans_train   = (ans_train - ans_mean) / ans_std
+    ans_valid   = (ans_valid - ans_mean) / ans_std
+    print('ans_mean, ans_std = ', ans_mean, ans_std)
+
+    os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+    
+    # モデルの構築とコンパイル
+    model = cnn_model()
+    callback = EarlyStopping(monitor='loss',patience=3)
+    model.compile(optimizer=Adam(), loss='mean_squared_error')
+    history = model.fit(input_train, ans_train, epochs=50, batch_size=64, 
+                        validation_data=(input_valid, ans_valid), 
+                        callbacks=[callback])
+    
+    learning_curve(history, output_dir)
+    # 評価データによるテスト
+    score = model.evaluate(input_test, ans_test)
+    predict = model.predict(input_test, batch_size=None, verbose=0, steps=None) # モデルの出力を獲得する
+    print('predict = ', predict.shape)
+    # 標準化を元に戻す
+    predict = predict * ans_std + ans_mean
+    # モデルデータの保存
+    model.save(output_dir + 'geosciAI24/model/model_test.h5')
+    # 評価データの保存
+    np.savez(output_dir + 'predict/predict_test.npz', 
+             predict=predict, ans=ans_test, 
+             history=history.history, score=score)
