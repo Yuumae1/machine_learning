@@ -95,19 +95,15 @@ ans_valid   = (ans_valid - ans_mean) / ans_std
 # CNNモデルの構築
 def cnn_model():
     model = Sequential()
-    model.add(Conv2D(32, (2, 2), padding='same', input_shape=(64, 64, 5), strides=(2,2)))   
+    model.add(Conv2D(32, (2, 2), padding='same', input_shape=(64, 64, 5), strides=(3,3), kernel_regularizer=l2(1e-4)))   
     model.add(BatchNormalization())
-    #model.add(LayerNormalization())
     model.add(Activation('relu'))                                                                             
     model.add(Conv2D(64, (2, 2), padding='same', strides=(2,2)))                                        
     model.add(BatchNormalization())
-    #model.add(LayerNormalization())
     model.add(Activation('relu'))                      
     model.add(Conv2D(128, (2, 2), padding='same', strides=(2,2)))                           
     model.add(BatchNormalization())
-    #model.add(LayerNormalization())
     #model.add(Conv2D(256, (2, 2), padding='same', strides=(2,2)))                           
-    #model.add(BatchNormalization())
     model.add(Activation('relu'))
     #model.add(Dropout(0.2))
 
