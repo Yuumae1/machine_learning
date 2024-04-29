@@ -69,10 +69,7 @@ def get_input_ans(start_year, end_year, input_dir, n_input = 1):
             input.append(x)
             ans.append(wind[ii+n_input+4-1])
             
-    # 欠損値のゼロ埋め
-    input = np.nan_to_num(np.array(input), nan=0)
-    ans   = np.nan_to_num(np.array(ans), nan=0)
-    return input, ans
+    return np.array(input), np.array(ans)
 
 # CNNモデルの構築
 def cnn_model():
@@ -126,10 +123,10 @@ if __name__ == "__main__":
     
     # 標準化処理
     print('Normalization...')
-    input_std  = np.std(input_train, axis=0)
-    input_mean = np.mean(input_train, axis=0)
-    ans_std    = np.std(ans_train, axis=0)
-    ans_mean   = np.mean(ans_train, axis=0)
+    input_std  = np.nanstd(input_train, axis=0)
+    input_mean = np.nanmean(input_train, axis=0)
+    ans_std    = np.nanstd(ans_train, axis=0)
+    ans_mean   = np.nanmean(ans_train, axis=0)
 
     input_train = (input_train - input_mean) / input_std
     input_valid = (input_valid - input_mean) / input_std
@@ -137,6 +134,13 @@ if __name__ == "__main__":
     ans_train   = (ans_train - ans_mean) / ans_std
     ans_valid   = (ans_valid - ans_mean) / ans_std
     ans_test    = (ans_test - ans_mean) / ans_std
+    # 欠損値のゼロ埋め
+    input_train = np.nan_to_num(input_train, nan=0)
+    input_valid = np.nan_to_num(input_valid, nan=0)
+    input_test  = np.nan_to_num(input_test, nan=0)
+    ans_train   = np.nan_to_num(ans_train, nan=0)
+    ans_valid   = np.nan_to_num(ans_valid, nan=0)
+    ans_test    = np.nan_to_num(ans_test, nan=0)
     print('ans_mean, ans_std = ', ans_mean, ans_std)
 
     os.environ["CUDA_VISIBLE_DEVICES"] = "0"
@@ -146,7 +150,7 @@ if __name__ == "__main__":
         predicts = []
         seeds = [0,1,3]
         
-        for seed in range(14, 30):
+        for seed in range(30):
             print('Seed = ', seed)
             random.set_seed(seed)  # TensorFlowのseed値を設定
             np.random.seed(seed)  
