@@ -8,7 +8,7 @@ from decimal import Decimal, ROUND_HALF_UP
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from torch.utils.data import DataLoader
+from torch.utils.data import TensorDataset, DataLoader
 
 input_dir1 = '/home/maeda/data/geosciAI24/TC_data_GeoSciAI2024/'
 input_dir2 = '/home/maeda/data/geosciAI24/TC_data_GeoSciAI2024_test/'
@@ -187,11 +187,11 @@ if __name__ == "__main__":
                 train_loss = 0.0
                 
                 for inputs, targets in train_dataloader:
-                    optimizer.zero_grad()
+                    optim.zero_grad()
                     outputs = model(inputs)
                     loss = criterion(outputs, targets)
                     loss.backward()
-                    optimizer.step()
+                    optim.step()
                     train_loss += loss.item() * inputs.size(0)
                 
                 train_loss /= len(train_dataset)
