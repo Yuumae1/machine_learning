@@ -183,7 +183,7 @@ if __name__ == "__main__":
             best_loss = float('inf')
             early_stopping_counter = 0
             
-            for epoch in range(30):
+            for epoch in range(17,19):
                 model.train()
                 train_loss = 0.0
                 
