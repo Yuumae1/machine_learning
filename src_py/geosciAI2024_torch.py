@@ -86,7 +86,7 @@ class CNNModel(nn.Module):
         self.relu3 = nn.ReLU()
         self.dropout3 = nn.Dropout(0.1)
         self.flatten = nn.Flatten()
-        self.fc1 = nn.Linear(128*16*16, 128)
+        self.fc1 = nn.Linear(128*8*8, 128)
         self.relu4 = nn.ReLU()
         self.fc2 = nn.Linear(128, 1)
 
