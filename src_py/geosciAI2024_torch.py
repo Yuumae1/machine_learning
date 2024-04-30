@@ -166,7 +166,7 @@ if __name__ == "__main__":
         seeds = [7,8,9,10,12,13,14,15]
         criterion = nn.MSELoss()
         optimizer = optim.Adam(model.parameters())
-        for seed in range(17, 30):
+        for seed in range(19, 21):
             print('Seed =', seed)
             torch.manual_seed(seed)
             np.random.seed(seed)
@@ -183,7 +183,7 @@ if __name__ == "__main__":
             best_loss = float('inf')
             early_stopping_counter = 0
             
-            for epoch in range(17,19):
+            for epoch in range(100):
                 model.train()
                 train_loss = 0.0
                 
@@ -215,13 +215,12 @@ if __name__ == "__main__":
                     early_stopping_counter = 0
                 else:
                     early_stopping_counter += 1
-                    if early_stopping_counter >= 3:
+                    if early_stopping_counter >= 5:
                         break
             
             # テストデータの評価
             test_dataset = TensorDataset(torch.Tensor(input_test.transpose(0,3,1,2)), torch.Tensor(ans_test))
-            test_dataloader = DataLoader(test_dataset, batch_size=None, shuffle=False)
-            
+            test_dataloader = DataLoader(test_dataset, batch_size=input_test.shape[0], shuffle=False)
             model.eval()
             test_loss = 0.0
             predicts = []
