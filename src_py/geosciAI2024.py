@@ -36,14 +36,14 @@ def get_input_ans(start_year, end_year, input_dir, n_input = 1):
         colname = col[6] #TCフラグ
         tc_df = df[df[colname] == 1] #TCフラグが１のところだけ抽出
         index = tc_df.index
-        start_index = max([index[0], 2]) #発生時に２ステップ前のデータを使いたいが、ない場合は諦める。
+        start_index = index[0] #発生時に２ステップ前のデータを使いたいが、ない場合は諦める。
         end_index = min([index[-1], df.shape[0]-5]) #最後のTCフラグ1の時点から24時間後（4ステップ先）の予測をしたいがデータがないかもしれない。
 
-        time = np.array(df.iloc[start_index-2:end_index+4+1, 0])
-        lon  = np.array(df.iloc[start_index-2:end_index+4+1, 1])
-        lat  = np.array(df.iloc[start_index-2:end_index+4+1, 2])
-        wind = np.array(df.iloc[start_index-2:end_index+4+1, 3])
-        tsteps = wind.shape[0] - 2 - 4
+        time = np.array(df.iloc[start_index:end_index+4+1, 0])
+        lon  = np.array(df.iloc[start_index:end_index+4+1, 1])
+        lat  = np.array(df.iloc[start_index:end_index+4+1, 2])
+        wind = np.array(df.iloc[start_index:end_index+4+1, 3])
+        tsteps = wind.shape[0] - 4
         
         # 予測対象の画像データを取得
         for ii in range(tsteps):
@@ -138,9 +138,6 @@ if __name__ == "__main__":
     input_train = np.nan_to_num(input_train, nan=0)
     input_valid = np.nan_to_num(input_valid, nan=0)
     input_test  = np.nan_to_num(input_test, nan=0)
-    ans_train   = np.nan_to_num(ans_train, nan=0)
-    ans_valid   = np.nan_to_num(ans_valid, nan=0)
-    ans_test    = np.nan_to_num(ans_test, nan=0)
     print('ans_mean, ans_std = ', ans_mean, ans_std)
 
     os.environ["CUDA_VISIBLE_DEVICES"] = "0"
@@ -148,9 +145,9 @@ if __name__ == "__main__":
     if ensemble == True:
         scores = []
         predicts = []
-        seeds = [0,1,3]
+        seeds = [0,1,3,4,6,7,8,9,10,12,13,14,15]
         
-        for seed in range(11,20):
+        for seed in seeds:
             print('Seed = ', seed)
             random.set_seed(seed)  # TensorFlowのseed値を設定
             np.random.seed(seed)  
