@@ -164,7 +164,7 @@ if __name__ == "__main__":
         predicts = []
         seeds = [7,8,9,10,12,13,14,15]
         criterion = nn.MSELoss()
-        ptimizer = optim.Adam(model.parameters())
+        optimizer = optim.Adam(model.parameters())
         for seed in range(17, 30):
             print('Seed =', seed)
             torch.manual_seed(seed)
@@ -187,11 +187,11 @@ if __name__ == "__main__":
                 train_loss = 0.0
                 
                 for inputs, targets in train_dataloader:
-                    optim.zero_grad()
+                    optimizer.zero_grad()
                     outputs = model(inputs)
                     loss = criterion(outputs, targets)
                     loss.backward()
-                    optim.step()
+                    optimizer.step()
                     train_loss += loss.item() * inputs.size(0)
                 
                 train_loss /= len(train_dataset)
