@@ -5,13 +5,10 @@ import glob
 import pandas as pd
 from datetime import datetime
 from decimal import Decimal, ROUND_HALF_UP
-from tensorflow import random
-from keras.models import Sequential
-from keras.layers import Dense, Dropout, Activation, Flatten
-from keras.layers import Conv2D, BatchNormalization
-from keras.regularizers import l2
-from keras.optimizers import Adam
-from keras.callbacks import EarlyStopping
+import torch
+import torch.nn as nn
+import torch.optim as optim
+from torch.utils.data import DataLoader
 
 input_dir1 = '/home/maeda/data/geosciAI24/TC_data_GeoSciAI2024/'
 input_dir2 = '/home/maeda/data/geosciAI24/TC_data_GeoSciAI2024_test/'
@@ -72,27 +69,47 @@ def get_input_ans(start_year, end_year, input_dir, n_input = 1):
     return np.array(input), np.array(ans)
 
 # CNNモデルの構築
-def cnn_model():
-    model = Sequential()
-    model.add(Conv2D(32, (2, 2), padding='same', input_shape=(64, 64, 7), strides=(2,2), kernel_regularizer=l2(0.001)))   
-    model.add(BatchNormalization())
-    model.add(Activation('relu')) 
-    model.add(Dropout(0.1))                                                                            
-    model.add(Conv2D(64, (2, 2), padding='same', strides=(2,2)))                                        
-    model.add(BatchNormalization())
-    model.add(Activation('relu'))
-    model.add(Dropout(0.1))                      
-    model.add(Conv2D(128, (2, 2), padding='same', strides=(2,2)))                           
-    model.add(BatchNormalization())                          
-    model.add(Activation('relu'))
-    model.add(Dropout(0.1))
+class CNNModel(nn.Module):
+    def __init__(self):
+        super(CNNModel, self).__init__()
+        self.conv1 = nn.Conv2d(7, 32, kernel_size=2, stride=2, padding=1)
+        self.bn1 = nn.BatchNorm2d(32)
+        self.relu1 = nn.ReLU()
+        self.dropout1 = nn.Dropout(0.1)
+        self.conv2 = nn.Conv2d(32, 64, kernel_size=2, stride=2, padding=1)
+        self.bn2 = nn.BatchNorm2d(64)
+        self.relu2 = nn.ReLU()
+        self.dropout2 = nn.Dropout(0.1)
+        self.conv3 = nn.Conv2d(64, 128, kernel_size=2, stride=2, padding=1)
+        self.bn3 = nn.BatchNorm2d(128)
+        self.relu3 = nn.ReLU()
+        self.dropout3 = nn.Dropout(0.1)
+        self.flatten = nn.Flatten()
+        self.fc1 = nn.Linear(128*16*16, 128)
+        self.relu4 = nn.ReLU()
+        self.fc2 = nn.Linear(128, 1)
 
-    model.add(Flatten())  # 一次元の配列に変換                          
-    model.add(Dense(128))
-    model.add(Activation('relu'))
-    model.add(Dense(1, activation='linear'))
-    model.summary()
-    return model
+    def forward(self, x):
+        x = self.conv1(x)
+        x = self.bn1(x)
+        x = self.relu1(x)
+        x = self.dropout1(x)
+        x = self.conv2(x)
+        x = self.bn2(x)
+        x = self.relu2(x)
+        x = self.dropout2(x)
+        x = self.conv3(x)
+        x = self.bn3(x)
+        x = self.relu3(x)
+        x = self.dropout3(x)
+        x = self.flatten(x)
+        x = self.fc1(x)
+        x = self.relu4(x)
+        x = self.fc2(x)
+        return x
+    
+model = CNNModel()
+
 
 # 学習曲線の描画
 def learning_curve(history, output_dir, seed, ensemble):
@@ -146,62 +163,88 @@ if __name__ == "__main__":
         scores = []
         predicts = []
         seeds = [7,8,9,10,12,13,14,15]
-        
-        for seed in range(17,30):
-            print('Seed = ', seed)
-            random.set_seed(seed)  # TensorFlowのseed値を設定
-            np.random.seed(seed)  
-            # モデルの構築とコンパイル
-            model = cnn_model()
-            callback = EarlyStopping(monitor='loss',patience=3)
-            model.compile(optimizer=Adam(), loss='mean_squared_error')
-            history = model.fit(input_train, ans_train, epochs=30, batch_size=64, 
-                                validation_data=(input_valid, ans_valid), 
-                                callbacks=[callback])
+        criterion = nn.MSELoss()
+        ptimizer = optim.Adam(model.parameters())
+        for seed in range(17, 30):
+            print('Seed =', seed)
+            torch.manual_seed(seed)
+            np.random.seed(seed)
             
-            learning_curve(history, output_dir, seed, ensemble)
-            # 評価データによるテスト
-            score = model.evaluate(input_test, ans_test)
-            predict = model.predict(input_test, batch_size=None, verbose=0, steps=None) # モデルの出力を獲得する
-            print('predict = ', predict.shape)
+            # モデルの初期化
+            model = CNNModel()
+            print(model)
+            # データローダーの作成とモデルの訓練
+            train_dataset = TensorDataset(torch.Tensor(input_train), torch.Tensor(ans_train))
+            train_dataloader = DataLoader(train_dataset, batch_size=64, shuffle=True)
+            valid_dataset = TensorDataset(torch.Tensor(input_valid), torch.Tensor(ans_valid))
+            valid_dataloader = DataLoader(valid_dataset, batch_size=64, shuffle=False)
+            
+            best_loss = float('inf')
+            early_stopping_counter = 0
+            
+            for epoch in range(30):
+                model.train()
+                train_loss = 0.0
+                
+                for inputs, targets in train_dataloader:
+                    optimizer.zero_grad()
+                    outputs = model(inputs)
+                    loss = criterion(outputs, targets)
+                    loss.backward()
+                    optimizer.step()
+                    train_loss += loss.item() * inputs.size(0)
+                
+                train_loss /= len(train_dataset)
+                
+                model.eval()
+                valid_loss = 0.0
+                
+                with torch.no_grad():
+                    for inputs, targets in valid_dataloader:
+                        outputs = model(inputs)
+                        loss = criterion(outputs, targets)
+                        valid_loss += loss.item() * inputs.size(0)
+                
+                valid_loss /= len(valid_dataset)
+                
+                print(f"Epoch {epoch+1}/{30} - Train Loss: {train_loss:.4f} - Valid Loss: {valid_loss:.4f}")
+                
+                if valid_loss < best_loss:
+                    best_loss = valid_loss
+                    early_stopping_counter = 0
+                else:
+                    early_stopping_counter += 1
+                    if early_stopping_counter >= 3:
+                        break
+            
+            # テストデータの評価
+            test_dataset = TensorDataset(torch.Tensor(input_test), torch.Tensor(ans_test))
+            test_dataloader = DataLoader(test_dataset, batch_size=None, shuffle=False)
+            
+            model.eval()
+            test_loss = 0.0
+            predicts = []
+            
+            with torch.no_grad():
+                for inputs, targets in test_dataloader:
+                    outputs = model(inputs)
+                    loss = criterion(outputs, targets)
+                    test_loss += loss.item() * inputs.size(0)
+                    predicts.append(outputs.numpy())
+            
+            test_loss /= len(test_dataset)
+            predicts = np.concatenate(predicts)
+            
+            print('predict =', predicts.shape)
+            
             # 標準化を元に戻す
-            predict = predict * ans_std + ans_mean
-            # モデルデータの保存
-            model.save(output_dir + f'/model/model_test{(seed):03}.h5')
-            # 評価データの保存
-            np.savez(output_dir + f'geosciAI24/predict/predict_test{(seed):03}.npz', 
-                    predict=predict, ans=ans_test, 
-                    history=history.history, score=score)
+            predicts = predicts * ans_std + ans_mean
             
-            scores.append(score)
-            predicts.append(predict)
-        
-        scores = np.array(scores)
-        predicts = np.array(predicts)
-        print('scores = ', scores)
-        print('mean score, std score = ', np.mean(scores), np.std(scores))
-        
-        np.savez(output_dir + 'geosciAI24/predict/predict_ensemble.npz', 
-                    seeds=seeds, predict=predicts, ans=ans_test, score=scores)
-    
-    else:
-        seed = None
-        
-        model = cnn_model()
-        callback = EarlyStopping(monitor='loss',patience=3)
-        model.compile(optimizer=Adam(), loss='mean_squared_error')
-        history = model.fit(input_train, ans_train, epochs=30, batch_size=64, 
-                            validation_data=(input_valid, ans_valid), 
-                            callbacks=[callback])
-        
-        learning_curve(history, output_dir, seed, ensemble)
-        score = model.evaluate(input_test, ans_test)
-        predict = model.predict(input_test, batch_size=None, verbose=0, steps=None) # モデルの出力を獲得する
-        print('predict = ', predict.shape)
-        predict = predict * ans_std + ans_mean
-        
-        model.save(output_dir + f'/model/model_test.h5')
-        np.savez(output_dir + f'geosciAI24/predict/predict_test.npz', 
-                predict=predict, ans=ans_test, 
-                history=history.history, score=score)
+            # モデルデータの保存
+            torch.save(model.state_dict(), output_dir + f'/model/model_test{seed:03}.pt')
+            
+            # 評価データの保存
+            np.savez(output_dir + f'geosciAI24/predict/predict_test{seed:03}.npz', 
+                    predict=predicts, ans=ans_test, score=test_loss)
+
         

@@ -28,26 +28,28 @@ def get_input_ans(start_year, end_year, input_dir, n_input = 1):
     for i in range(start_year, end_year+1):
         trackfiles += glob.glob(input_dir + f'track_data/{i}*.csv')
 
-    input=[]
-    ans =[]
+    input = []
+    ans = []
+    latlon = []
     for file in trackfiles:
         df = pd.read_csv(file)
         col = df.columns
         colname = col[6] #TCフラグ
         tc_df = df[df[colname] == 1] #TCフラグが１のところだけ抽出
         index = tc_df.index
-        start_index = index[0] #発生時に２ステップ前のデータを使いたいが、ない場合は諦める。
+        start_index = max([index[0], 2]) #発生時に２ステップ前のデータを使いたいが、ない場合は諦める。
         end_index = min([index[-1], df.shape[0]-5]) #最後のTCフラグ1の時点から24時間後（4ステップ先）の予測をしたいがデータがないかもしれない。
 
-        time = np.array(df.iloc[start_index:end_index+4+1, 0])
-        lon  = np.array(df.iloc[start_index:end_index+4+1, 1])
-        lat  = np.array(df.iloc[start_index:end_index+4+1, 2])
-        wind = np.array(df.iloc[start_index:end_index+4+1, 3])
-        tsteps = wind.shape[0] - 4
+        time = np.array(df.iloc[start_index-2:end_index+4+1, 0])
+        lon  = np.array(df.iloc[start_index-2:end_index+4+1, 1])
+        lat  = np.array(df.iloc[start_index-2:end_index+4+1, 2])
+        wind = np.array(df.iloc[start_index-2:end_index+4+1, 3])
+        tsteps = wind.shape[0] - 2 - 4
         
         # 予測対象の画像データを取得
         for ii in range(tsteps):
             x = np.zeros((64, 64, len(field)), dtype=np.float32)
+            l = np.zeros((2), dtype=np.float32)
             if lat[ii]<0:
                 ns = "s"
             else:
@@ -58,6 +60,8 @@ def get_input_ans(start_year, end_year, input_dir, n_input = 1):
             if round_lon == 360:
                 round_lon = 0
             ymdh = datetime.strptime(time[ii], "%HZ%d%b%Y").strftime('%Y%m%d%H')
+            l[0] = lat
+            l[1] = lon
             # 対応するデータの読み込み
             for jj in range(len(field)):
                 #if jj == 3:   # SST は daily data なので時間を丸めて処理
@@ -68,8 +72,9 @@ def get_input_ans(start_year, end_year, input_dir, n_input = 1):
                 
             input.append(x)
             ans.append(wind[ii+n_input+4-1])
+            latlon.append(l)
             
-    return np.array(input), np.array(ans)
+    return np.array(input), np.array(ans), np.array(latlon)
 
 # CNNモデルの構築
 def cnn_model():
@@ -92,7 +97,21 @@ def cnn_model():
     model.add(Activation('relu'))
     model.add(Dense(1, activation='linear'))
     model.summary()
-    return model
+    return model1
+
+def nn_model():
+    model = Sequential()
+    model.add(Dense(64, input_dim=2, kernel_regularizer=l2(0.001)))
+    model.add(BatchNormalization())
+    model.add(Activation('relu'))
+    model.add(Dropout(0.1))
+    model.add(Dense(128, kernel_regularizer=l2(0.001)))
+    model.add(BatchNormalization())
+    model.add(Activation('relu'))
+    model.add(Dropout(0.1))
+    model.add(Dense(16, activation='linear'))
+    model.summary()
+    return model2
 
 # 学習曲線の描画
 def learning_curve(history, output_dir, seed, ensemble):
@@ -147,7 +166,7 @@ if __name__ == "__main__":
         predicts = []
         seeds = [7,8,9,10,12,13,14,15]
         
-        for seed in range(17,30):
+        for seed in range(15,30):
             print('Seed = ', seed)
             random.set_seed(seed)  # TensorFlowのseed値を設定
             np.random.seed(seed)  
