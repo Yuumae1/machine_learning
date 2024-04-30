@@ -9,6 +9,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import TensorDataset, DataLoader
+from torchsummary import summary
 
 input_dir1 = '/home/maeda/data/geosciAI24/TC_data_GeoSciAI2024/'
 input_dir2 = '/home/maeda/data/geosciAI24/TC_data_GeoSciAI2024_test/'
@@ -72,15 +73,15 @@ def get_input_ans(start_year, end_year, input_dir, n_input = 1):
 class CNNModel(nn.Module):
     def __init__(self):
         super(CNNModel, self).__init__()
-        self.conv1 = nn.Conv2d(7, 32, kernel_size=2, stride=2, padding=1)
+        self.conv1 = nn.Conv2d(7, 32, kernel_size=2, stride=2, padding=0)
         self.bn1 = nn.BatchNorm2d(32)
         self.relu1 = nn.ReLU()
         self.dropout1 = nn.Dropout(0.1)
-        self.conv2 = nn.Conv2d(32, 64, kernel_size=2, stride=2, padding=1)
+        self.conv2 = nn.Conv2d(32, 64, kernel_size=2, stride=2, padding=0)
         self.bn2 = nn.BatchNorm2d(64)
         self.relu2 = nn.ReLU()
         self.dropout2 = nn.Dropout(0.1)
-        self.conv3 = nn.Conv2d(64, 128, kernel_size=2, stride=2, padding=1)
+        self.conv3 = nn.Conv2d(64, 128, kernel_size=2, stride=2, padding=0)
         self.bn3 = nn.BatchNorm2d(128)
         self.relu3 = nn.ReLU()
         self.dropout3 = nn.Dropout(0.1)
@@ -174,9 +175,9 @@ if __name__ == "__main__":
             model = CNNModel()
             print(model)
             # データローダーの作成とモデルの訓練
-            train_dataset = TensorDataset(torch.Tensor(input_train), torch.Tensor(ans_train))
+            train_dataset = TensorDataset(torch.Tensor(input_train.transpose(0,3,1,2)), torch.Tensor(ans_train))
             train_dataloader = DataLoader(train_dataset, batch_size=64, shuffle=True)
-            valid_dataset = TensorDataset(torch.Tensor(input_valid), torch.Tensor(ans_valid))
+            valid_dataset = TensorDataset(torch.Tensor(input_valid.transpose(0,3,1,2)), torch.Tensor(ans_valid))
             valid_dataloader = DataLoader(valid_dataset, batch_size=64, shuffle=False)
             
             best_loss = float('inf')
@@ -218,7 +219,7 @@ if __name__ == "__main__":
                         break
             
             # テストデータの評価
-            test_dataset = TensorDataset(torch.Tensor(input_test), torch.Tensor(ans_test))
+            test_dataset = TensorDataset(torch.Tensor(input_test.transpose(0,3,1,2)), torch.Tensor(ans_test))
             test_dataloader = DataLoader(test_dataset, batch_size=None, shuffle=False)
             
             model.eval()
