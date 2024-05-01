@@ -18,7 +18,90 @@ input_dir2 = '/home/maeda/data/geosciAI24/TC_data_GeoSciAI2024_test/'
 output_dir = '/home/maeda/machine_learning/results/'
 
 ensemble = True
+def get_input_ans(start_year, end_year, input_dir, n_input = 1):
+    trackfiles = []
+    field = ['olr', 'qv600', 'slp', 'sst', 'u200', 'u850', 'v200', 'v850']
+    FIELD = ['OLR', 'QV600', 'SLP', 'SST', 'U200', 'U850', 'V200', 'V850']
+    for i in range(start_year, end_year+1):
+        trackfiles += glob.glob(input_dir + f'track_data/{i}*.csv')
 
+    input = []
+    ans = []
+    times = []
+    for file in trackfiles:
+        df = pd.read_csv(file)
+        col = df.columns
+        colname = col[6] #TCフラグ
+        tc_df = df[df[colname] == 1] #TCフラグが１のところだけ抽出
+        index = tc_df.index
+        start_index = index[0]
+        end_index = min([index[-1], df.shape[0]-5]) #最後のTCフラグ1の時点から24時間後（4ステップ先）の予測をしたいがデータがないかもしれない。
+
+        time = np.array(df.iloc[start_index:end_index+4+1, 0])
+        lon  = np.array(df.iloc[start_index:end_index+4+1, 1])
+        lat  = np.array(df.iloc[start_index:end_index+4+1, 2])
+        wind = np.array(df.iloc[start_index:end_index+4+1, 3])
+        tsteps = wind.shape[0] - 4
+        # SST data にあわせるため、初期は 00 時刻のデータを読み込む
+        if time[0][:2] == '06':
+            time = time[3:]
+            lon  = lon[3:]
+            lat  = lat[3:]
+            wind = wind[3:]
+            tsteps = tsteps - 3 
+        elif time[0][:2] == '12':
+            time = time[2:]
+            lon  = lon[2:]
+            lat  = lat[2:]
+            wind = wind[2:]
+            tsteps = tsteps - 2
+        elif time[0][:2] == '18':
+            time = time[1:]
+            lon  = lon[1:]
+            lat  = lat[1:]
+            wind = wind[1:] 
+            tsteps = tsteps - 1  
+
+        # 予測対象の画像データを取得
+        for ii in range(tsteps):
+            x = np.zeros((64, 64, len(field)), dtype=np.float32)
+            if lat[ii]<0:
+                ns = "s"
+            else:
+                ns = "n"
+            # 四捨五入を１０進数で正確に行う
+            round_lon = Decimal(lon[ii]).quantize(Decimal('0'), rounding=ROUND_HALF_UP)
+            round_lat = Decimal(lat[ii]).quantize(Decimal('0'), rounding=ROUND_HALF_UP)
+            if round_lon == 360:
+                round_lon = 0
+            ymdh = datetime.strptime(time[ii], "%HZ%d%b%Y").strftime('%Y%m%d%H')
+            if str(ymdh[-2:]) == '00':   # SST は daily data なので00時の位置データで読み込む
+                ymdh_sst = datetime.strptime(time[ii], "%HZ%d%b%Y").strftime('%Y%m%d%H')
+                lon_sst = lon[ii]
+                lat_sst = lat[ii]
+                if lat_sst<0:
+                    ns_sst = "s"
+                else:
+                    ns_sst = "n"
+            # 対応するデータの読み込み
+            for jj in range(len(field)):
+                if jj == 3:   # SST の読み込み
+                    round_lon_sst = Decimal(lon_sst).quantize(Decimal('0'), rounding=ROUND_HALF_UP)
+                    round_lat_sst = Decimal(lat_sst).quantize(Decimal('0'), rounding=ROUND_HALF_UP)
+                    if round_lon_sst == 360:
+                        round_lon_sst = 0
+                    filename = f"{field[jj]}_{ymdh_sst}_{(round_lon_sst):03}_{(abs(round_lat_sst)):03}{ns_sst}.npz"
+                    xi = np.load(input_dir + f'field_data/{ymdh_sst[:4]}/{FIELD[jj]}/{filename}')
+                else:
+                    filename = f"{field[jj]}_{ymdh}_{(round_lon):03}_{(abs(round_lat)):03}{ns}.npz"
+                    xi = np.load(input_dir + f'field_data/{ymdh[:4]}/{FIELD[jj]}/{filename}')
+                x[:,:,jj] = xi['data']
+                
+            input.append(x)
+            ans.append(wind[ii+n_input+4-1])
+            times.append(time[ii])
+    return np.array(input), np.array(ans), np.array(times)
+'''''
 def get_input_ans(start_year, end_year, input_dir, n_input = 1):
     trackfiles = []
     field = ['olr', 'qv600', 'slp', 'u200', 'u850', 'v200', 'v850']
@@ -72,11 +155,11 @@ def get_input_ans(start_year, end_year, input_dir, n_input = 1):
             ans.append(wind[ii+n_input+4-1])
             
     return np.array(input), np.array(ans), np.array(times)
-
+'''''
 # CNNモデルの構築
 def cnn_model():
     model = Sequential()
-    model.add(Conv2D(32, (2, 2), padding='same', input_shape=(64, 64, 7), strides=(2,2), kernel_regularizer=l2(0.001)))   
+    model.add(Conv2D(32, (2, 2), padding='same', input_shape=(64, 64, 8), strides=(2,2), kernel_regularizer=l2(0.001)))   
     model.add(BatchNormalization())
     model.add(Activation('relu')) 
     model.add(Dropout(0.1))                                                                            
