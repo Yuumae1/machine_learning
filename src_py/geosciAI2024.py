@@ -191,9 +191,9 @@ def learning_curve(history, output_dir, seed, ensemble):
     plt.title('Loss vs. Epoch')
     plt.legend()
     if ensemble == True:
-        plt.savefig(output_dir + f'geosciAI24/l_curve/predict{(seed):03}.png')
+        plt.savefig(output_dir + f'geosciAI24/l_curve/predict8-{(seed):03}.png')
     else:
-        plt.savefig(output_dir + 'geosciAI24/l_curve/predict.png')
+        plt.savefig(output_dir + 'geosciAI24/l_curve/predict8.png')
     plt.close()
 
 
@@ -232,7 +232,7 @@ if __name__ == "__main__":
         predicts = []
         seeds = [7,8,9,10,12,13,14,15]
         
-        for seed in range(21,30):
+        for seed in range(5):
             print('Seed = ', seed)
             random.set_seed(seed)  # TensorFlowのseed値を設定
             np.random.seed(seed)  
@@ -252,9 +252,9 @@ if __name__ == "__main__":
             # 標準化を元に戻す
             predict = predict * ans_std + ans_mean
             # モデルデータの保存
-            model.save(output_dir + f'/model/model_test{(seed):03}.h5')
+            model.save(output_dir + f'/model/model8_test{(seed):03}.h5')
             # 評価データの保存
-            np.savez(output_dir + f'geosciAI24/predict/predict_test{(seed):03}.npz', 
+            np.savez(output_dir + f'geosciAI24/predict/predict8_test{(seed):03}.npz', 
                     predict=predict, ans=ans_test, 
                     history=history.history, score=score, time=times_test)
             
@@ -266,7 +266,7 @@ if __name__ == "__main__":
         print('scores = ', scores)
         print('mean score, std score = ', np.mean(scores), np.std(scores))
         
-        np.savez(output_dir + 'geosciAI24/predict/predict_ensemble.npz', 
+        np.savez(output_dir + 'geosciAI24/predict/predict_ensemble8.npz', 
                     seeds=seeds, predict=predicts, ans=ans_test, score=scores)
     
     else:
