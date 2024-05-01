@@ -28,8 +28,9 @@ def get_input_ans(start_year, end_year, input_dir, n_input = 1):
     for i in range(start_year, end_year+1):
         trackfiles += glob.glob(input_dir + f'track_data/{i}*.csv')
 
-    input=[]
-    ans =[]
+    input = []
+    ans   = []
+    times = []
     for file in trackfiles:
         df = pd.read_csv(file)
         col = df.columns
@@ -66,10 +67,11 @@ def get_input_ans(start_year, end_year, input_dir, n_input = 1):
                 xi = np.load(input_dir + f'field_data/{ymdh[:4]}/{FIELD[jj]}/{filename}')
                 x[:,:,jj] = xi['data']
                 
+            times.append(time[ii])
             input.append(x)
             ans.append(wind[ii+n_input+4-1])
             
-    return np.array(input), np.array(ans)
+    return np.array(input), np.array(ans), np.array(times)
 
 # CNNモデルの構築
 def cnn_model():
@@ -114,9 +116,9 @@ def learning_curve(history, output_dir, seed, ensemble):
 
 if __name__ == "__main__": 
     print('Loading Data...')
-    input_train, ans_train = get_input_ans(1979, 1999, input_dir1)
-    input_valid, ans_valid = get_input_ans(2000, 2003, input_dir1)
-    input_test,  ans_test  = get_input_ans(2004, 2009, input_dir2)
+    input_train, ans_train, times_train = get_input_ans(1979, 1999, input_dir1)
+    input_valid, ans_valid, times_valid = get_input_ans(2000, 2003, input_dir1)
+    input_test,  ans_test,  times_test  = get_input_ans(2004, 2009, input_dir2)
     print('input_train, ans_train = ', input_train.shape, ans_train.shape)
     print('input_valid, ans_valid = ', input_valid.shape, ans_valid.shape)
     print('input_test,  ans_test = ', input_test.shape, ans_test.shape)
@@ -147,7 +149,7 @@ if __name__ == "__main__":
         predicts = []
         seeds = [7,8,9,10,12,13,14,15]
         
-        for seed in range(17,30):
+        for seed in range(21,30):
             print('Seed = ', seed)
             random.set_seed(seed)  # TensorFlowのseed値を設定
             np.random.seed(seed)  
@@ -171,7 +173,7 @@ if __name__ == "__main__":
             # 評価データの保存
             np.savez(output_dir + f'geosciAI24/predict/predict_test{(seed):03}.npz', 
                     predict=predict, ans=ans_test, 
-                    history=history.history, score=score)
+                    history=history.history, score=score, time=times_test)
             
             scores.append(score)
             predicts.append(predict)
