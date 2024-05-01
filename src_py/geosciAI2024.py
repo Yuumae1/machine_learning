@@ -240,7 +240,7 @@ if __name__ == "__main__":
             model = cnn_model()
             callback = EarlyStopping(monitor='loss',patience=3)
             model.compile(optimizer=Adam(), loss='mean_squared_error')
-            history = model.fit(input_train, ans_train, epochs=30, batch_size=64, 
+            history = model.fit(input_train, ans_train, epochs=30, batch_size=128, 
                                 validation_data=(input_valid, ans_valid), 
                                 callbacks=[callback])
             
