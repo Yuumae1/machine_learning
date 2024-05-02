@@ -208,10 +208,12 @@ if __name__ == "__main__":
     
     # 標準化処理
     print('Normalization...')
-    input_std  = np.nanstd(input_train, axis=0)
-    input_mean = np.nanmean(input_train, axis=0)
-    ans_std    = np.nanstd(ans_train, axis=0)
-    ans_mean   = np.nanmean(ans_train, axis=0)
+    ipt = np.stack([input_train, input_valid], axis=0)
+    ans = np.stack([ans_train, ans_valid], axis=0)
+    input_std  = np.nanstd(ipt, axis=0)
+    input_mean = np.nanmean(ipt, axis=0)
+    ans_std    = np.nanstd(ans, axis=0)
+    ans_mean   = np.nanmean(ans, axis=0)
 
     input_train = (input_train - input_mean) / input_std
     input_valid = (input_valid - input_mean) / input_std
@@ -232,7 +234,7 @@ if __name__ == "__main__":
         predicts = []
         seeds = [7,8,9,10,12,13,14,15]
         
-        for seed in range(11, 35):
+        for seed in range(32, 35):
             print('Seed = ', seed)
             random.set_seed(seed)  # TensorFlowのseed値を設定
             np.random.seed(seed)  
