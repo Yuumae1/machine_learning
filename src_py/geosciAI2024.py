@@ -208,8 +208,8 @@ if __name__ == "__main__":
     
     # 標準化処理
     print('Normalization...')
-    ipt = np.stack([input_train, input_valid], axis=0)
-    ans = np.stack([ans_train, ans_valid], axis=0)
+    ipt = np.concatenate([input_train, input_valid], axis=0)
+    ans = np.concatenate([ans_train, ans_valid], axis=0)
     input_std  = np.nanstd(ipt, axis=0)
     input_mean = np.nanmean(ipt, axis=0)
     ans_std    = np.nanstd(ans, axis=0)
