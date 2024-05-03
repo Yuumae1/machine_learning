@@ -28,6 +28,7 @@ def get_input_ans(start_year, end_year, input_dir, n_input = 1):
     input = []
     ans = []
     times = []
+    init = []
     for file in trackfiles:
         df = pd.read_csv(file)
         col = df.columns
@@ -99,8 +100,9 @@ def get_input_ans(start_year, end_year, input_dir, n_input = 1):
                 
             input.append(x)
             ans.append(wind[ii+n_input+4-1])
+            init.append(wind[ii+n_input-1])
             times.append(time[ii])
-    return np.array(input), np.array(ans), np.array(times)
+    return np.array(input), np.array(ans), np.array(times), np.append(init)
 '''''
 def get_input_ans(start_year, end_year, input_dir, n_input = 1):
     trackfiles = []
@@ -199,9 +201,9 @@ def learning_curve(history, output_dir, seed, ensemble):
 
 if __name__ == "__main__": 
     print('Loading Data...')
-    input_train, ans_train, times_train = get_input_ans(1979, 1999, input_dir1)
-    input_valid, ans_valid, times_valid = get_input_ans(2000, 2003, input_dir1)
-    input_test,  ans_test,  times_test  = get_input_ans(2004, 2009, input_dir2)
+    input_train, ans_train, times_train, init_train = get_input_ans(1979, 1999, input_dir1)
+    input_valid, ans_valid, times_valid, init_valid = get_input_ans(2000, 2003, input_dir1)
+    input_test,  ans_test,  times_test,  init_test  = get_input_ans(2004, 2009, input_dir2)
     print('input_train, ans_train = ', input_train.shape, ans_train.shape)
     print('input_valid, ans_valid = ', input_valid.shape, ans_valid.shape)
     print('input_test,  ans_test = ', input_test.shape, ans_test.shape)
@@ -234,7 +236,7 @@ if __name__ == "__main__":
         predicts = []
         seeds = [7,8,9,10,12,13,14,15]
         
-        for seed in range(32, 35):
+        for seed in range(36, 37):
             print('Seed = ', seed)
             random.set_seed(seed)  # TensorFlowのseed値を設定
             np.random.seed(seed)  
@@ -290,5 +292,5 @@ if __name__ == "__main__":
         model.save(output_dir + f'/model/model_test.h5')
         np.savez(output_dir + f'geosciAI24/predict/predict_test.npz', 
                 predict=predict, ans=ans_test, 
-                history=history.history, score=score)
+                history=history.history, score=score, init_wind=init_test)
         
