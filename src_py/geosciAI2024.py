@@ -260,7 +260,7 @@ if __name__ == "__main__":
             # 評価データの保存
             np.savez(output_dir + f'geosciAI24/predict/predict8_test{(seed):03}.npz', 
                     predict=predict, ans=ans_test, 
-                    history=history.history, score=score, time=times_test)
+                    history=history.history, score=score, time=times_test, init_wind=init_test)
             
             scores.append(score)
             predicts.append(predict)
