@@ -102,7 +102,7 @@ def get_input_ans(start_year, end_year, input_dir, n_input = 1):
             ans.append(wind[ii+n_input+4-1])
             init.append(wind[ii+n_input-1])
             times.append(time[ii])
-    return np.array(input), np.array(ans), np.array(times), np.append(init)
+    return np.array(input), np.array(ans), np.array(times), np.array(init)
 '''''
 def get_input_ans(start_year, end_year, input_dir, n_input = 1):
     trackfiles = []
