@@ -20,8 +20,8 @@ output_dir = '/home/maeda/machine_learning/results/'
 ensemble = True
 def get_input_ans(start_year, end_year, input_dir, n_input = 1):
     trackfiles = []
-    field = ['qv600' 'slp', 'sst', 'u200', 'u850', 'v200', 'v850']
-    FIELD = ['QV600' 'SLP', 'SST', 'U200', 'U850', 'V200', 'V850']
+    field = ['qv600', 'slp', 'sst', 'u200', 'u850', 'v200', 'v850']
+    FIELD = ['QV600', 'SLP', 'SST', 'U200', 'U850', 'V200', 'V850']
     for i in range(start_year, end_year+1):
         trackfiles += glob.glob(input_dir + f'track_data/{i}*.csv')
 
@@ -86,7 +86,7 @@ def get_input_ans(start_year, end_year, input_dir, n_input = 1):
                     ns_sst = "n"
             # 対応するデータの読み込み
             for jj in range(len(field)):
-                if jj == 2:   # SST の読み込み
+                if field[jj] == 'sst':   # SST の読み込み
                     round_lon_sst = Decimal(lon_sst).quantize(Decimal('0'), rounding=ROUND_HALF_UP)
                     round_lat_sst = Decimal(lat_sst).quantize(Decimal('0'), rounding=ROUND_HALF_UP)
                     if round_lon_sst == 360:
