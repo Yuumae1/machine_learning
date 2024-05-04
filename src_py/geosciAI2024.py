@@ -20,8 +20,8 @@ output_dir = '/home/maeda/machine_learning/results/'
 ensemble = True
 def get_input_ans(start_year, end_year, input_dir, n_input = 1):
     trackfiles = []
-    field = ['olr', 'qv600', 'slp', 'u200', 'u850', 'v200', 'v850']
-    FIELD = ['OLR', 'QV600', 'SLP', 'U200', 'U850', 'V200', 'V850']
+    field = ['olr', 'qv600', 'slp', 'sst', 'u850', 'v200', 'v850']
+    FIELD = ['OLR', 'QV600', 'SLP', 'SST', 'U850', 'V200', 'V850']
     for i in range(start_year, end_year+1):
         trackfiles += glob.glob(input_dir + f'track_data/{i}*.csv')
 
@@ -256,9 +256,9 @@ if __name__ == "__main__":
             # 標準化を元に戻す
             predict = predict * ans_std + ans_mean
             # モデルデータの保存
-            model.save(output_dir + f'/model/model8_test{(seed):03}_wo-sst.h5')
+            model.save(output_dir + f'/model/model8_test{(seed):03}_wo-u200.h5')
             # 評価データの保存
-            np.savez(output_dir + f'geosciAI24/predict/predict8_test{(seed):03}_wo-sst.npz', 
+            np.savez(output_dir + f'geosciAI24/predict/predict8_test{(seed):03}_wo-u200.npz', 
                     predict=predict, ans=ans_test, 
                     history=history.history, score=score, time=times_test, init_wind=init_test)
             
