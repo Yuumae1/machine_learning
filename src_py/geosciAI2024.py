@@ -17,11 +17,11 @@ input_dir1 = '/home/maeda/data/geosciAI24/TC_data_GeoSciAI2024/'
 input_dir2 = '/home/maeda/data/geosciAI24/TC_data_GeoSciAI2024_test/'
 output_dir = '/home/maeda/machine_learning/results/'
 
-ensemble = False
+ensemble = True
 def get_input_ans(start_year, end_year, input_dir, n_input = 1):
     trackfiles = []
-    field = ['qv600', 'slp', 'sst', 'u200', 'u850', 'v200', 'v850']
-    FIELD = ['QV600', 'SLP', 'SST', 'U200', 'U850', 'V200', 'V850']
+    field = ['qv600' 'slp', 'sst', 'u200', 'u850', 'v200', 'v850']
+    FIELD = ['QV600' 'SLP', 'SST', 'U200', 'U850', 'V200', 'V850']
     for i in range(start_year, end_year+1):
         trackfiles += glob.glob(input_dir + f'track_data/{i}*.csv')
 
@@ -236,7 +236,7 @@ if __name__ == "__main__":
         predicts = []
         seeds = [7,8,9,10,12,13,14,15]
         
-        for seed in range(37, 41):
+        for seed in range(36, 37):
             print('Seed = ', seed)
             random.set_seed(seed)  # TensorFlowのseed値を設定
             np.random.seed(seed)  
@@ -290,7 +290,7 @@ if __name__ == "__main__":
         predict = predict * ans_std + ans_mean
         
         model.save(output_dir + f'/model/model_wo-olr.h5')
-        np.savez(output_dir + f'geosciAI24/predict/predict_wo-olr.npz', 
+        np.savez(output_dir + f'geosciAI24/predict/predict_wo-u850.npz', 
                 predict=predict, ans=ans_test, 
                 history=history.history, score=score, init_wind=init_test)
         
