@@ -17,11 +17,11 @@ input_dir1 = '/home/maeda/data/geosciAI24/TC_data_GeoSciAI2024/'
 input_dir2 = '/home/maeda/data/geosciAI24/TC_data_GeoSciAI2024_test/'
 output_dir = '/home/maeda/machine_learning/results/'
 
-ensemble = True
+ensemble = False
 def get_input_ans(start_year, end_year, input_dir, n_input = 1):
     trackfiles = []
-    field = ['olr', 'qv600', 'slp', 'sst', 'u200', 'u850', 'v200', 'v850']
-    FIELD = ['OLR', 'QV600', 'SLP', 'SST', 'U200', 'U850', 'V200', 'V850']
+    field = ['qv600', 'slp', 'sst', 'u200', 'u850', 'v200', 'v850']
+    FIELD = ['QV600', 'SLP', 'SST', 'U200', 'U850', 'V200', 'V850']
     for i in range(start_year, end_year+1):
         trackfiles += glob.glob(input_dir + f'track_data/{i}*.csv')
 
@@ -161,7 +161,7 @@ def get_input_ans(start_year, end_year, input_dir, n_input = 1):
 # CNNモデルの構築
 def cnn_model():
     model = Sequential()
-    model.add(Conv2D(32, (2, 2), padding='same', input_shape=(64, 64, 8), strides=(2,2), kernel_regularizer=l2(0.001)))   
+    model.add(Conv2D(32, (2, 2), padding='same', input_shape=(64, 64, 7), strides=(2,2), kernel_regularizer=l2(0.001)))   
     model.add(BatchNormalization())
     model.add(Activation('relu')) 
     model.add(Dropout(0.1))                                                                            
@@ -289,8 +289,8 @@ if __name__ == "__main__":
         print('predict = ', predict.shape)
         predict = predict * ans_std + ans_mean
         
-        model.save(output_dir + f'/model/model_test.h5')
-        np.savez(output_dir + f'geosciAI24/predict/predict_test.npz', 
+        model.save(output_dir + f'/model/model_wo-olr.h5')
+        np.savez(output_dir + f'geosciAI24/predict/predict_wo-olr.npz', 
                 predict=predict, ans=ans_test, 
                 history=history.history, score=score, init_wind=init_test)
         
