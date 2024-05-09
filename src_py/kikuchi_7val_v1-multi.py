@@ -111,11 +111,13 @@ def preprocess(data, rt, lead_time):
 def cnn_model(output_shape):
   model = Sequential()
   # 入力画像　25×144×3 ：(緯度方向の格子点数)×(軽度方向の格子点数)×(チャンネル数、OLRのラグ)
-  model.add(Conv2D(32, (3, 3), padding='same', input_shape=(25, 144, 3*7), strides=(2,2), kernel_regularizer=l2(0.01)))   
+  model.add(Conv2D(32, (3, 3), padding='same', input_shape=(25, 144, 3*7), strides=(2,2)))   
   model.add(BatchNormalization())
+  model.add(Dropout(0.2)) 
   model.add(Activation('relu'))                                           
   model.add(Conv2D(64, (2, 2), padding='same', strides=(2,2)))                                        
   model.add(BatchNormalization())
+  model.add(Dropout(0.2)) 
   model.add(Activation('relu'))
   model.add(Conv2D(128, (2, 2), padding='same', strides=(2,2)))                           
   model.add(BatchNormalization())
@@ -133,7 +135,7 @@ def cnn_model(output_shape):
 def culc_cor(predict, y_test, lead_time):
   cor = (np.sum(predict[:,0] * y_test[:,0], axis=0) + np.sum(predict[:,1] * y_test[:,1], axis=0)) / \
           (np.sqrt(np.sum(predict[:,0] ** 2 + predict[:,1] ** 2, axis=0)) * np.sqrt(np.sum(y_test[:,0] ** 2 + y_test[:,1] ** 2, axis=0)))
-  print('lead time {} day = '.format(lead_time), cor)
+  print('cor: lead time {} day = '.format(lead_time), cor)
 
 def learning_curve(history, lead_time, seed):
   plt.figure(figsize=(8, 6))
