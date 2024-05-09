@@ -175,7 +175,7 @@ ipt_test  = np.concatenate([olr_ipt_test, u850_ipt_test,  u200_ipt_test,
 #ipt_test = olr_ipt_test
 print(ipt_train.shape, ipt_test.shape)
 
-for seed in range(30):
+for seed in range(30, 60):
   print('Seed = ', seed)
   random.set_seed(seed)  # TensorFlowのseed値を設定
   np.random.seed(seed) 
