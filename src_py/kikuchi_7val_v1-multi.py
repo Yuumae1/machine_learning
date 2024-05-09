@@ -73,7 +73,7 @@ def indexing(lead_time):
   rt = real_time2[:-lead_time-1]
   for tt in range(lead_time):
     sup.append(PC_norm[tt:-(lead_time-tt)-1,:])
-  sup_data = np.array(sup)
+  sup_data = np.array(sup).transpose(1,0,2).reshape(-1, output_shape)
   print(sup_data.shape)
   idx = np.where((rt.year <= 2015))[0]
   sup_train = sup_data[idx]
