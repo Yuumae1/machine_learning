@@ -1,16 +1,15 @@
 import numpy as np
 from numpy.linalg.linalg import norm
-import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
 import tensorflow as tf
 from tensorflow.keras.models import Model
 from keras.models import Sequential
 from keras.layers import Dense, Dropout, Activation, Flatten
-from keras.layers import Conv2D, MaxPooling2D, BatchNormalization, LayerNormalization
+from keras.layers import Conv2D, BatchNormalization
 from keras.optimizers import Adam
-from keras.optimizers import RMSprop
 from keras.regularizers import l2
+from keras.callbacks import EarlyStopping
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
 from matplotlib.markers import MarkerStyle
@@ -179,7 +178,10 @@ for seed in range(30):
 
   model = cnn_model(output_shape)
   model.compile(optimizer=Adam(), loss='mean_squared_error')
-  history = model.fit(ipt_train, sup_train, epochs=200, batch_size=128, validation_data=(ipt_test, sup_test))
+  callback = EarlyStopping(monitor='loss',patience=3)
+  history = model.fit(ipt_train, sup_train, epochs=200, batch_size=128, 
+                      validation_data=(ipt_test, sup_test), 
+                      callbacks=[callback])
   predict = model.predict(ipt_test, batch_size=None, verbose=0, steps=None) # モデルの出力を獲得する
   print(predict.shape)
   y_test = sup_test
