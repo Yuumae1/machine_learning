@@ -4,6 +4,7 @@ from tensorflow import keras
 from tensorflow.keras import layers
 import tensorflow as tf
 from tensorflow.keras.models import Model
+from tensorflow import random
 from keras.models import Sequential
 from keras.layers import Dense, Dropout, Activation, Flatten
 from keras.layers import Conv2D, BatchNormalization
@@ -134,7 +135,7 @@ def culc_cor(predict, y_test, lead_time):
           (np.sqrt(np.sum(predict[:,0] ** 2 + predict[:,1] ** 2, axis=0)) * np.sqrt(np.sum(y_test[:,0] ** 2 + y_test[:,1] ** 2, axis=0)))
   print('lead time {} day = '.format(lead_time), cor)
 
-def learning_curve(history, lead_time):
+def learning_curve(history, lead_time, seed):
   plt.figure(figsize=(8, 6))
   plt.plot(history.history['loss'], label='Training Loss')
   plt.plot(history.history['val_loss'], label='Validation Loss')    #Validation loss : 精度検証データにおける損失
@@ -144,16 +145,18 @@ def learning_curve(history, lead_time):
   plt.ylabel('Loss')
   plt.title('Loss vs. Epoch   Lead Time = ' + str(lead_time) + 'days')
   plt.legend()
-  plt.savefig('/home/maeda/machine_learning/results/kikuchi-7vals_v1/learning_curve/olr-u-h850-prw/7vals_' + str(lead_time) + 'day.png')
+  plt.savefig(f'/home/maeda/machine_learning/results/kikuchi-7vals_v1-multi/learning_curve/olr-uv-h850-prw/7vals_{lead_time}day{(seed):03}.png')
   plt.close()
 
 
 # ==== iteration program ====
 #lt_box = [0, 1, 3, 5, 10, 15, 20, 25, 30, 35]
-# seed = np.
+lead_time = 35
+print('==== lead time : {} day ====='.format(lead_time))
 for seed in range(30):
-  lead_time = 35
-  print('==== lead time : {} day ====='.format(lead_time))
+  print('Seed = ', seed)
+  random.set_seed(seed)  # TensorFlowのseed値を設定
+  np.random.seed(seed) 
 
   data, rt, sup_train, sup_test, output_shape = indexing(lead_time) 
 
@@ -186,8 +189,8 @@ for seed in range(30):
   print(predict.shape)
   y_test = sup_test
   culc_cor(predict, y_test, lead_time)
-  learning_curve(history, lead_time)
-  np.savez('/home/maeda/machine_learning/results/kikuchi-7vals_v1-multi/cor/olr-uv-h850-prw/result-value_7vals_' + str(lead_time) + 'day.npz', predict, y_test)
-  model.save('/home/maeda/machine_learning/results/model/kikuchi-7vals_v1-multi/olr-uv-h850-prw/model_7vals_' + str(lead_time) + 'day.hdf5')
+  learning_curve(history, lead_time, seed)
+  np.savez(f'/home/maeda/machine_learning/results/kikuchi-7vals_v1-multi/cor/olr-uv-h850-prw/result-value_7vals_{lead_time}day{(seed):03}.npz', predict, y_test)
+  model.save(f'/home/maeda/machine_learning/results/model/kikuchi-7vals_v1-multi/olr-uv-h850-prw/model_7vals_{lead_time}day{(seed):03}.hdf5')
 
 print('==== Finish! ====')
