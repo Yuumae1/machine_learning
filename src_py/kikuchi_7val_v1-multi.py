@@ -73,7 +73,7 @@ def indexing(lead_time):
   rt = real_time2[:-lead_time-1]
   for tt in range(lead_time):
     sup.append(PC_norm[tt:-(lead_time-tt)-1,:])
-  sup_data = np.array(sup).reshape(-1, output_shape)
+  sup_data = np.array(sup)
   print(sup_data.shape)
   idx = np.where((rt.year <= 2015))[0]
   sup_train = sup_data[idx]
@@ -155,32 +155,30 @@ def learning_curve(history, lead_time, seed):
 #lt_box = [0, 1, 3, 5, 10, 15, 20, 25, 30, 35]
 lead_time = 35
 print('==== lead time : {} day ====='.format(lead_time))
+data, rt, sup_train, sup_test, output_shape = indexing(lead_time) 
+
+olr_ipt_train, olr_ipt_test = preprocess(olr_norm, rt, lead_time)
+u850_ipt_train, u850_ipt_test = preprocess(u850_norm, rt, lead_time)
+v850_ipt_train, v850_ipt_test = preprocess(v850_norm, rt, lead_time)
+u200_ipt_train, u200_ipt_test = preprocess(u200_norm, rt, lead_time)
+v200_ipt_train, v200_ipt_test = preprocess(v200_norm, rt, lead_time)
+h850_ipt_train, h850_ipt_test = preprocess(h850_norm, rt, lead_time)
+pr_wtr_ipt_train, pr_wtr_ipt_test = preprocess(pr_wtr_norm, rt, lead_time)
+
+ipt_train = np.concatenate([olr_ipt_train, u850_ipt_train,  u200_ipt_train,
+                            v850_ipt_train, v200_ipt_train, 
+                              h850_ipt_train, pr_wtr_ipt_train], 3)
+ipt_test  = np.concatenate([olr_ipt_test, u850_ipt_test,  u200_ipt_test,
+                            v850_ipt_test, v200_ipt_test, 
+                            h850_ipt_test, pr_wtr_ipt_test], 3)
+#ipt_train = olr_ipt_train
+#ipt_test = olr_ipt_test
+print(ipt_train.shape, ipt_test.shape)
+
 for seed in range(30):
   print('Seed = ', seed)
   random.set_seed(seed)  # TensorFlowのseed値を設定
   np.random.seed(seed) 
-
-  data, rt, sup_train, sup_test, output_shape = indexing(lead_time) 
-
-  olr_ipt_train, olr_ipt_test = preprocess(olr_norm, rt, lead_time)
-  u850_ipt_train, u850_ipt_test = preprocess(u850_norm, rt, lead_time)
-  v850_ipt_train, v850_ipt_test = preprocess(v850_norm, rt, lead_time)
-  u200_ipt_train, u200_ipt_test = preprocess(u200_norm, rt, lead_time)
-  v200_ipt_train, v200_ipt_test = preprocess(v200_norm, rt, lead_time)
-  h850_ipt_train, h850_ipt_test = preprocess(h850_norm, rt, lead_time)
-  pr_wtr_ipt_train, pr_wtr_ipt_test = preprocess(pr_wtr_norm, rt, lead_time)
-
-  ipt_train = np.concatenate([olr_ipt_train, u850_ipt_train,  u200_ipt_train,
-                              v850_ipt_train, v200_ipt_train, 
-                               h850_ipt_train, pr_wtr_ipt_train], 3)
-  ipt_test  = np.concatenate([olr_ipt_test, u850_ipt_test,  u200_ipt_test,
-                              v850_ipt_test, v200_ipt_test, 
-                              h850_ipt_test, pr_wtr_ipt_test], 3)
-  #ipt_train = olr_ipt_train
-  #ipt_test = olr_ipt_test
-  print(ipt_train.shape, ipt_test.shape)
-
-
   model = cnn_model(output_shape)
   model.compile(optimizer=Adam(), loss='mean_squared_error')
   callback = EarlyStopping(monitor='loss',patience=3)
