@@ -68,9 +68,12 @@ print('real time PCs = ', real_time2[0], real_time2[-1])
 
 # インデクシングする関数
 def indexing(lead_time):
-  output_shape = 2
+  sup = []
+  output_shape = 2 * lead_time
   rt = real_time2[:-lead_time-1]
-  sup_data = PC_norm[lead_time:]
+  for tt in range(lead_time):
+    sup.append(PC_norm[tt:-(lead_time-tt)-1,:])
+  sup_data = np.array(sup).reshape(-1, output_shape)
   print(sup_data.shape)
   idx = np.where((rt.year <= 2015))[0]
   sup_train = sup_data[idx]
@@ -105,7 +108,7 @@ def preprocess(data, rt, lead_time):
 
 
 # CNNモデルの構築
-def cnn_model():
+def cnn_model(output_shape):
   model = Sequential()
   # 入力画像　25×144×3 ：(緯度方向の格子点数)×(軽度方向の格子点数)×(チャンネル数、OLRのラグ)
   model.add(Conv2D(32, (3, 3), padding='same', input_shape=(25, 144, 3*7), strides=(2,2), kernel_regularizer=l2(0.01)))   
@@ -123,7 +126,7 @@ def cnn_model():
   model.add(Dense(128))
   model.add(Activation('relu'))
   #model.add(Dense(64))
-  model.add(Dense(2, activation='linear'))
+  model.add(Dense(output_shape, activation='linear'))
   model.summary()
   return model
 
@@ -148,33 +151,33 @@ def learning_curve(history, lead_time):
 
 # ==== iteration program ====
 #lt_box = [0, 1, 3, 5, 10, 15, 20, 25, 30, 35]
-lt_box = [10, 20, 35]
-for lead_time in lt_box:
-
+# seed = np.
+for seed in range(30):
+  lead_time = 35
   print('==== lead time : {} day ====='.format(lead_time))
 
   data, rt, sup_train, sup_test, output_shape = indexing(lead_time) 
 
   olr_ipt_train, olr_ipt_test = preprocess(olr_norm, rt, lead_time)
   u850_ipt_train, u850_ipt_test = preprocess(u850_norm, rt, lead_time)
-  #v850_ipt_train, v850_ipt_test = preprocess(v850_norm, rt, lead_time)
+  v850_ipt_train, v850_ipt_test = preprocess(v850_norm, rt, lead_time)
   u200_ipt_train, u200_ipt_test = preprocess(u200_norm, rt, lead_time)
-  #v200_ipt_train, v200_ipt_test = preprocess(v200_norm, rt, lead_time)
+  v200_ipt_train, v200_ipt_test = preprocess(v200_norm, rt, lead_time)
   h850_ipt_train, h850_ipt_test = preprocess(h850_norm, rt, lead_time)
   pr_wtr_ipt_train, pr_wtr_ipt_test = preprocess(pr_wtr_norm, rt, lead_time)
 
   ipt_train = np.concatenate([olr_ipt_train, u850_ipt_train,  u200_ipt_train,
-  #                            v850_ipt_train, v200_ipt_train, 
+                              v850_ipt_train, v200_ipt_train, 
                                h850_ipt_train, pr_wtr_ipt_train], 3)
   ipt_test  = np.concatenate([olr_ipt_test, u850_ipt_test,  u200_ipt_test,
-  #                            #v850_ipt_test, v200_ipt_test, 
+                              v850_ipt_test, v200_ipt_test, 
                               h850_ipt_test, pr_wtr_ipt_test], 3)
   #ipt_train = olr_ipt_train
   #ipt_test = olr_ipt_test
   print(ipt_train.shape, ipt_test.shape)
 
 
-  model = cnn_model()
+  model = cnn_model(output_shape)
   model.compile(optimizer=Adam(), loss='mean_squared_error')
   history = model.fit(ipt_train, sup_train, epochs=200, batch_size=128, validation_data=(ipt_test, sup_test))
   predict = model.predict(ipt_test, batch_size=None, verbose=0, steps=None) # モデルの出力を獲得する
@@ -182,7 +185,7 @@ for lead_time in lt_box:
   y_test = sup_test
   culc_cor(predict, y_test, lead_time)
   learning_curve(history, lead_time)
-  np.savez('/home/maeda/machine_learning/results/kikuchi-7vals_v1/cor/olr-u-h850-prw/result-value_7vals_' + str(lead_time) + 'day.npz', predict, y_test)
-  model.save('/home/maeda/machine_learning/results/model/kikuchi-7vals_v1/olr-u-h850-prw/model_7vals_' + str(lead_time) + 'day.hdf5')
+  np.savez('/home/maeda/machine_learning/results/kikuchi-7vals_v1-multi/cor/olr-uv-h850-prw/result-value_7vals_' + str(lead_time) + 'day.npz', predict, y_test)
+  model.save('/home/maeda/machine_learning/results/model/kikuchi-7vals_v1-multi/olr-uv-h850-prw/model_7vals_' + str(lead_time) + 'day.hdf5')
 
 print('==== Finish! ====')
