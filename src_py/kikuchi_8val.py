@@ -4,6 +4,7 @@ import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
 import tensorflow as tf
+from tensorflow import random
 from tensorflow.keras.models import Model
 from keras.models import Sequential
 from keras.layers import Dense, Dropout, Activation, Flatten
@@ -146,7 +147,7 @@ def learning_curve(history, lead_time):
   plt.ylabel('Loss')
   plt.title('Loss vs. Epoch   Lead Time = ' + str(lead_time) + 'days')
   plt.legend()
-  plt.savefig('/home/maeda/machine_learning/results/kikuchi-8vals_v1/learning_curve/8vals/' + str(lead_time) + 'day.png')
+  plt.savefig(f'/home/maeda/machine_learning/results/kikuchi-8vals_v1/learning_curve/8vals/{(lead_time):03}day.png')
   plt.close()
 
 
@@ -178,19 +179,22 @@ for lead_time in lt_box:
   #ipt_test = olr_ipt_test
   print(ipt_train.shape, ipt_test.shape)
 
-
-  model = cnn_model()
-  callback = EarlyStopping(monitor='loss',patience=4)
-  model.compile(optimizer=Adam(), loss='mean_squared_error')
-  history = model.fit(ipt_train, sup_train, epochs=200, batch_size=128, 
-                      validation_data=(ipt_test, sup_test),
-                      callbacks=[callback])
-  predict = model.predict(ipt_test, batch_size=None, verbose=0, steps=None) # モデルの出力を獲得する
-  print(predict.shape)
-  y_test = sup_test
-  culc_cor(predict, y_test, lead_time)
-  learning_curve(history, lead_time)
-  np.savez('/home/maeda/machine_learning/results/kikuchi-8vals_v1/cor/8vals/result-value' + str(lead_time) + 'day.npz', predict, y_test)
-  model.save('/home/maeda/machine_learning/results/model/kikuchi-8vals_v1/8vals/model' + str(lead_time) + 'day.hdf5')
+  for seed in range(20):
+    print('Seed = ', seed)
+    random.set_seed(seed)  # TensorFlowのseed値を設定
+    np.random.seed(seed)
+    model = cnn_model()
+    callback = EarlyStopping(monitor='loss',patience=4)
+    model.compile(optimizer=Adam(), loss='mean_squared_error')
+    history = model.fit(ipt_train, sup_train, epochs=200, batch_size=128, 
+                        validation_data=(ipt_test, sup_test),
+                        callbacks=[callback])
+    predict = model.predict(ipt_test, batch_size=None, verbose=0, steps=None) # モデルの出力を獲得する
+    print(predict.shape)
+    y_test = sup_test
+    culc_cor(predict, y_test, lead_time)
+    learning_curve(history, lead_time)
+    np.savez(f'/home/maeda/machine_learning/results/kikuchi-8vals_v1/cor/8vals/{(lead_time):03}day/seed{(seed):03}/.npz', predict, y_test)
+    model.save(f'/home/maeda/machine_learning/results/model/kikuchi-8vals_v1/8vals/model_{(lead_time):03}day/seed{(seed):03}.hdf5')
 
 print('==== Finish! ====')
