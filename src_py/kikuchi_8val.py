@@ -7,15 +7,11 @@ import tensorflow as tf
 from tensorflow.keras.models import Model
 from keras.models import Sequential
 from keras.layers import Dense, Dropout, Activation, Flatten
-from keras.layers import Conv2D, MaxPooling2D, BatchNormalization, LayerNormalization
+from keras.layers import Conv2D,BatchNormalization
 from keras.optimizers import Adam
-from keras.optimizers import RMSprop
 from keras.regularizers import l2
 import matplotlib.pyplot as plt
-import matplotlib.ticker as mticker
-from matplotlib.markers import MarkerStyle
-import cartopy.crs as ccrs
-import cartopy.feature as cfeature
+from keras.callbacks import EarlyStopping
 import pandas as pd
 
 # データの読み込み
@@ -142,7 +138,7 @@ def learning_curve(history, lead_time):
   plt.plot(history.history['loss'], label='Training Loss')
   plt.plot(history.history['val_loss'], label='Validation Loss')    #Validation loss : 精度検証データにおける損失
   plt.xlim(0, 200)
-  plt.ylim(0, 1.5)
+  plt.ylim(0, 1.)
   plt.xlabel('Epoch')
   plt.ylabel('Loss')
   plt.title('Loss vs. Epoch   Lead Time = ' + str(lead_time) + 'days')
@@ -152,7 +148,7 @@ def learning_curve(history, lead_time):
 
 
 # ==== iteration program ====
-lt_box = [0, 1, 3, 5, 10, 15, 20, 25, 30, 35]
+lt_box = [5, 10, 15, 20, 25, 30, 35]
 #lt_box = [10, 20, 35]
 for lead_time in lt_box:
 
@@ -181,8 +177,11 @@ for lead_time in lt_box:
 
 
   model = cnn_model()
+  callback = EarlyStopping(monitor='loss',patience=3)
   model.compile(optimizer=Adam(), loss='mean_squared_error')
-  history = model.fit(ipt_train, sup_train, epochs=200, batch_size=128, validation_data=(ipt_test, sup_test))
+  history = model.fit(ipt_train, sup_train, epochs=200, batch_size=128, 
+                      validation_data=(ipt_test, sup_test),
+                      callbacks=[callback])
   predict = model.predict(ipt_test, batch_size=None, verbose=0, steps=None) # モデルの出力を獲得する
   print(predict.shape)
   y_test = sup_test
