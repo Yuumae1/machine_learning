@@ -151,8 +151,8 @@ def learning_curve(history, lead_time):
 
 
 # ==== iteration program ====
-lt_box = [5, 10, 15, 20, 25, 30, 35]
-#lt_box = [10, 20, 35]
+#lt_box = [5, 10, 15, 20, 25, 30, 35]
+lt_box = np.arange(35)
 for lead_time in lt_box:
 
   print('==== lead time : {} day ====='.format(lead_time))
