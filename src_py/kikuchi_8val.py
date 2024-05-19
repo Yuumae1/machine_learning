@@ -194,7 +194,7 @@ for lead_time in lt_box:
     y_test = sup_test
     culc_cor(predict, y_test, lead_time)
     learning_curve(history, lead_time)
-    np.savez(f'/home/maeda/machine_learning/results/kikuchi-8vals_v1/cor/8vals/{(lead_time):03}day/seed{(seed):03}/.npz', predict, y_test)
+    np.savez(f'/home/maeda/machine_learning/results/kikuchi-8vals_v1/cor/8vals/{(lead_time):03}day/seed{(seed):03}.npz', predict, y_test)
     model.save(f'/home/maeda/machine_learning/results/model/kikuchi-8vals_v1/8vals/model_{(lead_time):03}day/seed{(seed):03}.hdf5')
 
 print('==== Finish! ====')
