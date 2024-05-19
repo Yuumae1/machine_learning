@@ -180,7 +180,7 @@ for lead_time in lt_box:
 
 
   model = cnn_model()
-  callback = EarlyStopping(monitor='loss',patience=3)
+  callback = EarlyStopping(monitor='loss',patience=4)
   model.compile(optimizer=Adam(), loss='mean_squared_error')
   history = model.fit(ipt_train, sup_train, epochs=200, batch_size=128, 
                       validation_data=(ipt_test, sup_test),
