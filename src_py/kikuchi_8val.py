@@ -7,7 +7,7 @@ import tensorflow as tf
 from tensorflow.keras.models import Model
 from keras.models import Sequential
 from keras.layers import Dense, Dropout, Activation, Flatten
-from keras.layers import Conv2D,BatchNormalization
+from keras.layers import Conv2D,BatchNormalization,LayerNormalization
 from keras.optimizers import Adam
 from keras.regularizers import l2
 import matplotlib.pyplot as plt
@@ -108,17 +108,20 @@ def cnn_model():
   model = Sequential()
   # 入力画像　25×144×3 ：(緯度方向の格子点数)×(軽度方向の格子点数)×(チャンネル数、OLRのラグ)
   model.add(Conv2D(32, (3, 3), padding='same', input_shape=(25, 144, 3*8), strides=(2,2), kernel_regularizer=l2(0.001)))   
-  model.add(BatchNormalization())
+  #model.add(BatchNormalization())
+  model.add(LayerNormalization())
   model.add(Activation('relu')) 
-  #model.add(Dropout(0.2))                                           
+  model.add(Dropout(0.2))                                           
   model.add(Conv2D(64, (2, 2), padding='same', strides=(2,2), kernel_regularizer=l2(0.001)))                                        
-  model.add(BatchNormalization())
+  #model.add(BatchNormalization())
+  model.add(LayerNormalization())
   model.add(Activation('relu'))
-  #model.add(Dropout(0.2)) 
+  model.add(Dropout(0.2)) 
   model.add(Conv2D(128, (2, 2), padding='same', strides=(2,2), kernel_regularizer=l2(0.001)))                           
-  model.add(BatchNormalization())
+  #model.add(BatchNormalization())
+  model.add(LayerNormalization())
   model.add(Activation('relu'))
-  #model.add(Dropout(0.2)) 
+  model.add(Dropout(0.2)) 
 
   model.add(Flatten())  # 一次元の配列に変換                                # 1*16*64 -> 1024
   model.add(Dense(128))
