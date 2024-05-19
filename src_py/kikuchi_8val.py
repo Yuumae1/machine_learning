@@ -39,12 +39,12 @@ print(real_time[0], real_time[-1])
 
 # 標準化処理
 def normalization(data):
-  data = np.nan_to_num(data, nan=0) # 欠損値(nan)を0で置換
   data_mean = np.mean(data, axis=0)
   data_std  = np.std(data, axis=0)
   data_norm = (data - data_mean) / data_std
   print('Raw Data        = ', data.max(), data.min())
   print('Normalized Data = ', data_norm.max(), data_norm.min())
+  data_norm = np.nan_to_num(data_norm, nan=0) # 欠損値(nan)を0で置換
   del data_mean, data_std
   return data_norm
 
