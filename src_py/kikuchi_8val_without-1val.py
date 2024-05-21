@@ -108,7 +108,7 @@ def preprocess(data, rt, lead_time):
 def cnn_model():
   model = Sequential()
   # 入力画像　25×144×3 ：(緯度方向の格子点数)×(軽度方向の格子点数)×(チャンネル数、OLRのラグ)
-  model.add(Conv2D(32, (3, 3), padding='same', input_shape=(25, 144, 3*8), strides=(2,2), kernel_regularizer=l2(0.001)))   
+  model.add(Conv2D(32, (3, 3), padding='same', input_shape=(25, 144, 3*7), strides=(2,2), kernel_regularizer=l2(0.001)))   
   model.add(BatchNormalization())
   #model.add(LayerNormalization())
   model.add(Activation('relu')) 
@@ -194,7 +194,7 @@ for lead_time in lt_box:
     ipt_test  = np.concatenate(val_box_test[kk], 3)
 
     print(ipt_train.shape, ipt_test.shape)
-    for seed in range(20,40):
+    for seed in range(0,20):
       print('Seed = ', seed)
       random.set_seed(seed)  # TensorFlowのseed値を設定
       np.random.seed(seed)
