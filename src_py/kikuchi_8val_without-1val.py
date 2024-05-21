@@ -186,7 +186,7 @@ for lead_time in lt_box:
                    [olr_ipt_test, u850_ipt_test, u200_ipt_test, v850_ipt_test, v200_ipt_test, pr_wtr_ipt_test, sst_ipt_test],
                    [olr_ipt_test, u850_ipt_test, u200_ipt_test, v850_ipt_test, v200_ipt_test, h850_ipt_test, sst_ipt_test],
                    [olr_ipt_test, u850_ipt_test, u200_ipt_test, v850_ipt_test, v200_ipt_test, h850_ipt_test, pr_wtr_ipt_test]]
-  wo_values = [olr, u850, v850, u200, v200, h850, pr_wtr, sst]
+  wo_values = ['olr', 'u850', 'v850', 'u200', 'v200', 'h850', 'pr_wtr', 'sst']
 # 各変数を抜いたデータを導入する:
   for kk in range(8):
     print('==== val box : {} ====='.format(wo_values[kk]))
