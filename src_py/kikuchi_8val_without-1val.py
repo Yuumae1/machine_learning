@@ -194,7 +194,7 @@ for lead_time in lt_box:
     ipt_test  = np.concatenate(val_box_test[kk], 3)
     print(ipt_train.shape, ipt_test.shape)
     
-    for seed in range(1):
+    for seed in range(1,20):
       print('Seed = ', seed)
       random.set_seed(seed)  # TensorFlowのseed値を設定
       np.random.seed(seed)
