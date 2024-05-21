@@ -147,7 +147,7 @@ def learning_curve(history, lead_time):
   plt.ylabel('Loss')
   plt.title('Loss vs. Epoch   Lead Time = ' + str(lead_time) + 'days')
   plt.legend()
-  plt.savefig(f'/home/maeda/machine_learning/results/kikuchi-8vals_v1/learning_curve/8vals/{(lead_time):03}day.png')
+  plt.savefig(f'/home/maeda/machine_learning/results/kikuchi-8vals_v1/learning_curve/7vals/{(lead_time):03}day.png')
   plt.close()
 
 
@@ -169,33 +169,47 @@ for lead_time in lt_box:
   pr_wtr_ipt_train, pr_wtr_ipt_test = preprocess(pr_wtr_norm, rt, lead_time)
   sst_ipt_train, sst_ipt_test = preprocess(sst_norm, rt, lead_time)
 
-  
-  ipt_train = np.concatenate([olr_ipt_train, u850_ipt_train,  u200_ipt_train,
-                              v850_ipt_train, v200_ipt_train, h850_ipt_train, 
-                              pr_wtr_ipt_train, sst_ipt_train], 3)
-  ipt_test  = np.concatenate([olr_ipt_test, u850_ipt_test,  u200_ipt_test,
-                              v850_ipt_test, v200_ipt_test, h850_ipt_test, 
-                              pr_wtr_ipt_test, sst_ipt_test], 3)
-  #ipt_train = olr_ipt_train
-  #ipt_test = olr_ipt_test
-  print(ipt_train.shape, ipt_test.shape)
+  # val_box から変数を選び取って input とする
+  val_box_train = [[u850_ipt_train, u200_ipt_train, v850_ipt_train, v200_ipt_train, h850_ipt_train, pr_wtr_ipt_train, sst_ipt_train],
+                   [olr_ipt_train, u200_ipt_train, v850_ipt_train, v200_ipt_train, h850_ipt_train, pr_wtr_ipt_train, sst_ipt_train],
+                   [olr_ipt_train, u850_ipt_train, v850_ipt_train, v200_ipt_train, h850_ipt_train, pr_wtr_ipt_train, sst_ipt_train],
+                   [olr_ipt_train, u850_ipt_train, u200_ipt_train, v200_ipt_train, h850_ipt_train, pr_wtr_ipt_train, sst_ipt_train],
+                   [olr_ipt_train, u850_ipt_train, u200_ipt_train, v850_ipt_train, h850_ipt_train, pr_wtr_ipt_train, sst_ipt_train],
+                   [olr_ipt_train, u850_ipt_train, u200_ipt_train, v850_ipt_train, v200_ipt_train, pr_wtr_ipt_train, sst_ipt_train],
+                   [olr_ipt_train, u850_ipt_train, u200_ipt_train, v850_ipt_train, v200_ipt_train, h850_ipt_train,  sst_ipt_train],
+                   [olr_ipt_train, u850_ipt_train, u200_ipt_train, v850_ipt_train, v200_ipt_train, h850_ipt_train, pr_wtr_ipt_train]]
+  val_box_test  = [[u850_ipt_test, u200_ipt_test, v850_ipt_test, v200_ipt_test, h850_ipt_test, pr_wtr_ipt_test, sst_ipt_test],
+                   [olr_ipt_test, u200_ipt_test, v850_ipt_test, v200_ipt_test, h850_ipt_test, pr_wtr_ipt_test, sst_ipt_test],
+                   [olr_ipt_test, u850_ipt_test, v850_ipt_test, v200_ipt_test, h850_ipt_test, pr_wtr_ipt_test, sst_ipt_test],
+                   [olr_ipt_test, u850_ipt_test, u200_ipt_test, v200_ipt_test, h850_ipt_test, pr_wtr_ipt_test, sst_ipt_test],
+                   [olr_ipt_test, u850_ipt_test, u200_ipt_test, v850_ipt_test, h850_ipt_test, pr_wtr_ipt_test, sst_ipt_test],
+                   [olr_ipt_test, u850_ipt_test, u200_ipt_test, v850_ipt_test, v200_ipt_test, pr_wtr_ipt_test, sst_ipt_test],
+                   [olr_ipt_test, u850_ipt_test, u200_ipt_test, v850_ipt_test, v200_ipt_test, h850_ipt_test, sst_ipt_test],
+                   [olr_ipt_test, u850_ipt_test, u200_ipt_test, v850_ipt_test, v200_ipt_test, h850_ipt_test, pr_wtr_ipt_test]]
+  wo_values = [olr, u850, v850, u200, v200, h850, pr_wtr, sst]
+# 各変数を抜いたデータを導入する:
+  for kk in range(8):
+    print('==== val box : {} ====='.format(wo_values[kk]))
+    ipt_train = np.concatenate(val_box_train[kk], 3)
+    ipt_test  = np.concatenate(val_box_test[kk], 3)
 
-  for seed in range(20,40):
-    print('Seed = ', seed)
-    random.set_seed(seed)  # TensorFlowのseed値を設定
-    np.random.seed(seed)
-    model = cnn_model()
-    callback = EarlyStopping(monitor='loss',patience=4)
-    model.compile(optimizer=Adam(), loss='mean_squared_error')
-    history = model.fit(ipt_train, sup_train, epochs=200, batch_size=128, 
-                        validation_data=(ipt_test, sup_test),
-                        callbacks=[callback])
-    predict = model.predict(ipt_test, batch_size=None, verbose=0, steps=None) # モデルの出力を獲得する
-    print(predict.shape)
-    y_test = sup_test
-    culc_cor(predict, y_test, lead_time)
-    learning_curve(history, lead_time)
-    np.savez(f'/home/maeda/machine_learning/results/kikuchi-8vals_v1/cor/8vals/{(lead_time):03}day/seed{(seed):03}.npz', predict, y_test)
-    model.save(f'/home/maeda/machine_learning/results/model/kikuchi-8vals_v1/8vals/model_{(lead_time):03}day/seed{(seed):03}.hdf5')
+    print(ipt_train.shape, ipt_test.shape)
+    for seed in range(20,40):
+      print('Seed = ', seed)
+      random.set_seed(seed)  # TensorFlowのseed値を設定
+      np.random.seed(seed)
+      model = cnn_model()
+      callback = EarlyStopping(monitor='loss',patience=4)
+      model.compile(optimizer=Adam(), loss='mean_squared_error')
+      history = model.fit(ipt_train, sup_train, epochs=200, batch_size=128, 
+                          validation_data=(ipt_test, sup_test),
+                          callbacks=[callback])
+      predict = model.predict(ipt_test, batch_size=None, verbose=0, steps=None) # モデルの出力を獲得する
+      print(predict.shape)
+      y_test = sup_test
+      culc_cor(predict, y_test, lead_time)
+      learning_curve(history, lead_time)
+      np.savez(f'/home/maeda/machine_learning/results/kikuchi-8vals_v1/cor/7vals/wo_{int(wo_values[kk])}/{(lead_time):03}day/seed{(seed):03}.npz', predict, y_test)
+      model.save(f'/home/maeda/machine_learning/results/model/kikuchi-8vals_v1/7vals/wo_{int(wo_values[kk])}/model_{(lead_time):03}day/seed{(seed):03}.hdf5')
 
 print('==== Finish! ====')
