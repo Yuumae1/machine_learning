@@ -192,16 +192,16 @@ for lead_time in lt_box:
     print('==== val box : {} ====='.format(wo_values[kk]))
     ipt_train = np.concatenate(val_box_train[kk], 3)
     ipt_test  = np.concatenate(val_box_test[kk], 3)
-
     print(ipt_train.shape, ipt_test.shape)
-    for seed in range(0,20):
+    
+    for seed in range(1):
       print('Seed = ', seed)
       random.set_seed(seed)  # TensorFlowのseed値を設定
       np.random.seed(seed)
       model = cnn_model()
       callback = EarlyStopping(monitor='loss',patience=4)
       model.compile(optimizer=Adam(), loss='mean_squared_error')
-      history = model.fit(ipt_train, sup_train, epochs=200, batch_size=128, 
+      history = model.fit(ipt_train, sup_train, epochs=200, batch_size=128, verbose=0,  # verbose=0 : 学習状況のログ出力を抑止
                           validation_data=(ipt_test, sup_test),
                           callbacks=[callback])
       predict = model.predict(ipt_test, batch_size=None, verbose=0, steps=None) # モデルの出力を獲得する
