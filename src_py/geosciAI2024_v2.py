@@ -66,7 +66,6 @@ def get_input_ans(start_year, end_year, input_dir, n_input = 1):
         # 予測対象の画像データを取得
         for ii in range(tsteps):
             x = np.zeros((64, 64, len(field)), dtype=np.float32)
-            x_T = np.zeros((64, 64, len(field)), dtype=np.float32)
             if lat[ii]<0:
                 ns = "s"
             else:
@@ -98,13 +97,9 @@ def get_input_ans(start_year, end_year, input_dir, n_input = 1):
                     filename = f"{field[jj]}_{ymdh}_{(round_lon):03}_{(abs(round_lat)):03}{ns}.npz"
                     xi = np.load(input_dir + f'field_data/{ymdh[:4]}/{FIELD[jj]}/{filename}')
                 x[:,:,jj] = xi['data']
-                if start_year == 1979:
-                    x_T[:,:,jj] = xi['data'][:,::-1] 
+
             input.append(x)
             ans.append(wind_forward[ii])
-            if start_year == 1979:
-                input.append(x_T)
-                ans.append(wind_forward[ii])
             init.append(wind[ii])
             times.append(time[ii])
     
