@@ -175,7 +175,7 @@ if __name__ == "__main__":
     input_test  = np.nan_to_num(input_test, nan=0)
     print('ans_mean, ans_std = ', ans_mean, ans_std)
 
-    os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+    os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
     
     if ensemble == True:
         scores = []
