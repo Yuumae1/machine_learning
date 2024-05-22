@@ -101,6 +101,7 @@ def get_input_ans(start_year, end_year, input_dir, n_input = 1):
                 if start_year == 1979:
                     x_T[:,:,jj] = xi['data'][:,::-1] 
             input.append(x)
+            input.append(x_T)
             ans.append(wind_forward[ii])
             init.append(wind[ii])
             times.append(time[ii])
