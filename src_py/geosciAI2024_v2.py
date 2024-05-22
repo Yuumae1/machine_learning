@@ -184,7 +184,7 @@ if __name__ == "__main__":
         predicts = []
         seeds = [7,8,9,10,12,13,14,15]
         
-        for seed in range(36, 37):
+        for seed in range(40):
             print('Seed = ', seed)
             random.set_seed(seed)  # TensorFlowのseed値を設定
             np.random.seed(seed)  
@@ -206,7 +206,7 @@ if __name__ == "__main__":
             # モデルデータの保存
             model.save(output_dir + f'/model/model8_test{(seed):03}_wo-v850.h5')
             # 評価データの保存
-            np.savez(output_dir + f'geosciAI24/predict/predict8_test{(seed):03}_wo-v850.npz', 
+            np.savez(output_dir + f'geosciAI24/predict/predict8_test{(seed):03}.npz', 
                     predict=predict, ans=ans_test, 
                     history=history.history, score=score, time=times_test, init_wind=init_test)
             
@@ -238,7 +238,7 @@ if __name__ == "__main__":
         predict = predict * ans_std + ans_mean
         
         model.save(output_dir + f'/model/model_wo-olr.h5')
-        np.savez(output_dir + f'geosciAI24/predict/predict8v2-{(seed):03}_wo-u850.npz', 
+        np.savez(output_dir + f'geosciAI24/predict/predict8v2-{(seed):03}.npz', 
                 predict=predict, ans=ans_test, 
                 history=history.history, score=score, init_wind=init_test)
         
