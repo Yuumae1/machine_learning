@@ -109,7 +109,7 @@ def get_input_ans(start_year, end_year, input_dir, n_input = 1):
 # CNNモデルの構築
 def cnn_model():
     model = Sequential()
-    model.add(Conv2D(32, (2, 2), padding='same', input_shape=(64, 64, 7), strides=(2,2), kernel_regularizer=l2(0.001)))   
+    model.add(Conv2D(32, (2, 2), padding='same', input_shape=(64, 64, 8), strides=(2,2), kernel_regularizer=l2(0.001)))   
     model.add(BatchNormalization())
     model.add(Activation('relu')) 
     model.add(Dropout(0.1))                                                                            
