@@ -35,7 +35,7 @@ def get_input_ans(start_year, end_year, input_dir, n_input = 1):
         col = df.columns
         colname = col[6] #TCフラグ
         tc_df = np.where(df[colname] == 1)[0] #TCフラグが１のところだけ抽出
-        tc_fw = np.roll(tc_df, 4) # 24時間後のデータを取得
+        tc_fw = np.roll(tc_df, -4) # 24時間後のデータを取得
         tc_fw[:4] = False
         time = np.array(df.iloc[tc_df, 0])
         lon  = np.array(df.iloc[tc_df, 1])
