@@ -94,8 +94,9 @@ def indexing(lead_time):
   sup_train = sup_data[idx]
   idx = np.where((rt.year > 2015))[0]
   sup_test = sup_data[idx]
+  sup_rt = rt[idx]
   print(sup_test.shape, sup_train.shape)
-  return data, rt, sup_train, sup_test, output_shape
+  return data, rt, sup_train, sup_test, output_shape, sup_rt
 
 # 入力データの前処理
 def preprocess(data, rt, lead_time):
@@ -119,7 +120,7 @@ for lead_time in lt_box:
 
   print('==== lead time : {} day ====='.format(lead_time))
 
-  data, rt, sup_train, sup_test, output_shape = indexing(lead_time) 
+  data, rt, sup_train, sup_test, output_shape, sup_rt = indexing(lead_time) 
 
   olr_ipt_test = preprocess(olr_norm, rt, lead_time)
   u850_ipt_test = preprocess(u850_norm, rt, lead_time)
@@ -143,7 +144,7 @@ model_path = f'/home/maeda/machine_learning/results/model/kikuchi-8vals_v1/8vals
 model = load_model(model_path)
 
 # jja のみを渡す
-jja = np.isin(real_time.month, [6, 7, 8])
+jja = np.isin(sup_rt.month, [6, 7, 8])
 datasets = ipt_test[jja]
 print(datasets.shape)
     
