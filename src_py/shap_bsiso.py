@@ -131,7 +131,7 @@ for lead_time in lt_box:
   datasets = ipt_test[jja]
   print(datasets.shape)
 
-  model_path = f'/home/maeda/machine_learning/results/model/kikuchi-8vals_v1/8vals/model_{(lead_time):03}day/seed{(seed):03}.hdf5'
+  model_path = f'/home/maeda/machine_learning/results/model/kikuchi-8vals_v1/8vals/model_{(lead_time):03}day/seed{(seed[lead_time]):03}.hdf5'
   model = load_model(model_path)
   
   # Shap Calculation
