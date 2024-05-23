@@ -126,12 +126,12 @@ for lead_time in lt_box:
   v850_ipt_test = preprocess(v850_norm, rt, lead_time)
   u200_ipt_test = preprocess(u200_norm, rt, lead_time)
   v200_ipt_test = preprocess(v200_norm, rt, lead_time)
-  #h850_ipt_test = preprocess(h850_norm, rt, lead_time)
+  h850_ipt_test = preprocess(h850_norm, rt, lead_time)
   pr_wtr_ipt_test = preprocess(pr_wtr_norm, rt, lead_time)
   sst_ipt_test = preprocess(sst_norm, rt, lead_time)
 
   ipt_test  = np.concatenate([olr_ipt_test, u850_ipt_test,  u200_ipt_test,
-                              v850_ipt_test, v200_ipt_test, #h850_ipt_test, 
+                              v850_ipt_test, v200_ipt_test, h850_ipt_test, 
                               pr_wtr_ipt_test, sst_ipt_test], 3)
   print(ipt_test.shape)
 
