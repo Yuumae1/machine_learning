@@ -105,7 +105,7 @@ seed = [ 8, 15, 16,  0, 19,  0,  0, 19, 12,  7,
         16, 15, 16, 16, 12, 13, 19, 19, 18, 18, 
         18, 13, 15, 18, 18, 18]
 
-lt_box = np.arange(36)
+lt_box = np.arange(5,36)
 
 for lead_time in lt_box:
 
@@ -142,4 +142,4 @@ for lead_time in lt_box:
 
   print(shap_values.shape)
   print(shap_values.mean(axis=(0,1,2)))
-  np.savez(f'/home/maeda/data/shap/jja_{(lead_time):3}day.npz', shap_values=shap_values)
+  np.savez(f'/home/maeda/data/bsiso_shap/jja_{(lead_time):03}day.npz', shap_values=shap_values)
