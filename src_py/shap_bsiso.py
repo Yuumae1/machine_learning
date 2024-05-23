@@ -10,24 +10,9 @@ from tensorflow.keras import layers
 import tensorflow as tf
 from tensorflow.keras.models import Model
 from tensorflow.keras import activations
-#from tf_keras_vis.activation_maximization import ActivationMaximization
-#from keras.models import Sequential
-#from keras.layers import Dense, Dropout, Activation, Flatten
-#from keras.layers import Conv2D, MaxPooling2D, BatchNormalization, LayerNormalization
-#from keras.optimizers import Adam
-#from keras.optimizers import RMSprop
-#from keras.regularizers import l2
-#import matplotlib.pyplot as plt
-#import matplotlib.ticker as mticker
-#from matplotlib.markers import MarkerStyle
-#import cartopy.crs as ccrs
-#import cartopy.feature as cfeature
 import pandas as pd
 import shap
 import numpy as np
-#import cv2
-
-
 # 画像用
 from keras.preprocessing.image import array_to_img, img_to_array, load_img
 # モデル読み込み用
@@ -112,13 +97,19 @@ def preprocess(data, rt, lead_time):
   ipt_test = np.stack([ipt_lag0_test, ipt_lag5_test, ipt_lag10_test], 3)
   return ipt_test
 
-# ==== iteration program ====
-lt_box = [0]
-#lt_box = [0, 5, 10, 15, 20, 25, 30, 35]
-#lt_box = np.arange(36)
+# ==== main program ====
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+# モデルの読み込み
+seed = np.array([ 8, 15, 16,  0, 19,  0,  0, 19, 12,  7,
+                  1, 19, 18, 17, 17,  2,  7, 16, 18, 16,
+                  16, 15, 16, 16, 12, 13, 19, 19, 18, 18, 
+                  18, 13, 15, 18, 18, 18])
+
+lt_box = np.arange(36)
+
 for lead_time in lt_box:
 
-  print('==== lead time : {} day ====='.format(lead_time))
+  print('==== Deep Lift calculation :lead time = {} day ====='.format(lead_time))
 
   data, rt, sup_train, sup_test, output_shape, sup_rt = indexing(lead_time) 
 
@@ -135,24 +126,20 @@ for lead_time in lt_box:
                               v850_ipt_test, v200_ipt_test, h850_ipt_test, 
                               pr_wtr_ipt_test, sst_ipt_test], 3)
   print(ipt_test.shape)
+  # jja のみを渡す
+  jja = np.isin(sup_rt.month, [6, 7, 8])
+  datasets = ipt_test[jja]
+  print(datasets.shape)
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "0"
-# モデルの読み込み
-seed = 8
-lead_time = 0
-model_path = f'/home/maeda/machine_learning/results/model/kikuchi-8vals_v1/8vals/model_{(lead_time):03}day/seed{(seed):03}.hdf5'
-model = load_model(model_path)
+  model_path = f'/home/maeda/machine_learning/results/model/kikuchi-8vals_v1/8vals/model_{(lead_time):03}day/seed{(seed):03}.hdf5'
+  model = load_model(model_path)
+  
+  # Shap Calculation
+  shap.explainers._deep.deep_tf.op_handlers["FusedBatchNormV3"] = shap.explainers._deep.deep_tf.passthrough # batch norm を挟む場合、このコードが必要：https://github.com/shap/shap/issues/1406
+  explainer = shap.DeepExplainer(model=model, data=datasets)
+  shap_values = explainer.shap_values(datasets, check_additivity=False)
+  shap_values = np.array(shap_values)
 
-# jja のみを渡す
-jja = np.isin(sup_rt.month, [6, 7, 8])
-datasets = ipt_test[jja]
-print(datasets.shape)
-    
-shap.explainers._deep.deep_tf.op_handlers["FusedBatchNormV3"] = shap.explainers._deep.deep_tf.passthrough # batch norm を挟む場合、このコードが必要：https://github.com/shap/shap/issues/1406
-explainer = shap.DeepExplainer(model=model, data=datasets)
-shap_values = explainer.shap_values(datasets, check_additivity=False)
-shap_values = np.array(shap_values)
-print('Deep Lift calculation is done!')
-print(shap_values.shape)
-print(shap_values.mean(axis=(0,1,2)))
-np.savez(f'/home/maeda/machine_learning/results/kikuchi-8vals_v1/shap/jja_{(lead_time):3}day.npz', shap_values=shap_values)
+  print(shap_values.shape)
+  print(shap_values.mean(axis=(0,1,2)))
+  np.savez(f'/home/maeda/data/shap/jja_{(lead_time):3}day.npz', shap_values=shap_values)
