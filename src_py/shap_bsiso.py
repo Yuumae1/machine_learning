@@ -1,5 +1,5 @@
 import os
-os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+
 import numpy as np
 import keras
 import tensorflow
@@ -135,14 +135,16 @@ for lead_time in lt_box:
                               pr_wtr_ipt_test, sst_ipt_test], 3)
   print(ipt_test.shape)
 
-
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 # モデルの読み込み
 seed = 8
 lead_time = 0
 model_path = f'/home/maeda/machine_learning/results/model/kikuchi-8vals_v1/8vals/model_{(lead_time):03}day/seed{(seed):03}.hdf5'
 model = load_model(model_path)
 
-datasets = ipt_test
+# jja のみを渡す
+jja = np.isin(real_time.month, [6, 7, 8])
+datasets = ipt_test[jja]
 print(datasets.shape)
     
 shap.explainers._deep.deep_tf.op_handlers["FusedBatchNormV3"] = shap.explainers._deep.deep_tf.passthrough # batch norm を挟む場合、このコードが必要：https://github.com/shap/shap/issues/1406
@@ -152,4 +154,4 @@ shap_values = np.array(shap_values)
 print('Deep Lift calculation is done!')
 print(shap_values.shape)
 print(shap_values.mean(axis=(0,1,2)))
-np.savez(f'/home/maeda/machine_learning/results/kikuchi-8vals_v1/shap/shap_{lead_time}day.npz', shap_values=shap_values)
+np.savez(f'/home/maeda/machine_learning/results/kikuchi-8vals_v1/shap/jja_{lead_time}day.npz', shap_values=shap_values)
