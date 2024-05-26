@@ -152,8 +152,8 @@ def learning_curve(history, lead_time):
 
 
 # ==== iteration program ====
-lt_box = [0, 5, 10, 15, 20, 25, 30, 35]
-#lt_box = np.arange(36)
+#lt_box = [0, 5, 10, 15, 20, 25, 30, 35]
+lt_box = np.arange(36)
 for lead_time in lt_box:
 
   print('==== lead time : {} day ====='.format(lead_time))
@@ -180,7 +180,7 @@ for lead_time in lt_box:
   #ipt_test = olr_ipt_test
   print(ipt_train.shape, ipt_test.shape)
 
-  for seed in range(20,40):
+  for seed in range(20,30):
     print('Seed = ', seed)
     random.set_seed(seed)  # TensorFlowのseed値を設定
     np.random.seed(seed)
