@@ -58,7 +58,7 @@ PC1 = np.load(data_file)['PC1']
 PC2 = np.load(data_file)['PC2']
 PC3 = np.load(data_file)['PC3']
 PC4 = np.load(data_file)['PC4']
-PCs = np.stack([PC1, PC2, PC3, PC4], axis=1)
+PCs = np.stack([PC1, PC2], axis=1)
 
 PC_std = PCs.std(axis=0)
 PC_norm = PCs / PC_std
