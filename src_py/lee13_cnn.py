@@ -29,21 +29,21 @@ print(data4.files)
 
 lat = data2['lat'][20:42]
 lon = data2['lon'][16:66]
-#olr = data1['olr'][:,20:42,16:66]
-#u850 = data1['u850'][:,20:42,16:66]
-#v850 = data1['v850'][:,20:42,16:66]
-#h850 = data1['h850'][:,20:42,16:66]
-olr1 = data1['olr1']
-olr2 = data1['olr2']
-u8501 = data1['u8501']
-u8502 = data1['u8502']
+olr = data1['olr'][:,20:42,16:66]
+u850 = data1['u850'][:,20:42,16:66]
+v850 = data1['v850'][:,20:42,16:66]
+h850 = data1['h850'][:,20:42,16:66]
+#olr1 = data1['olr1']
+#olr2 = data1['olr2']
+#u8501 = data1['u8501']
+#u8502 = data1['u8502']
 #v850 = data1['v850'][:,20:50,:]
-h8501 = data1['h8501']
-h8502 = data1['h8502']
+#h8501 = data1['h8501']
+#h8502 = data1['h8502']
 #pr_wtr = data4['data_anom_rm'][:-365,20:50,16:66]
 time = data_time['time']
 real_time = pd.to_datetime(time, unit='h', origin=pd.Timestamp('1800-01-01')) # 時刻をdatetime型に変換
-print(lat.shape, lon.shape, olr1.shape, time.shape, real_time.shape, u8501.shape, h8501.shape)
+print(lat.shape, lon.shape, olr.shape, time.shape, real_time.shape, u850.shape, h850.shape)
 print(real_time[0], real_time[-1])
 
 # bsiso index (MVEOF) 読み込み
