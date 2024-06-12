@@ -20,15 +20,15 @@ data = np.load('/home/maeda/data/bsiso_lee13/lee13_prepro_8vals.npz')
 print('data = ', data.files)
 
 lat = data['lat'][20:41]
-lon = data['lon'][16:65]
-olr = data['olr'][80:,20:41,16:65]
-u850 = data['u850'][80:,20:41,16:65]
+lon = data['lon'][:] #16:65
+olr = data['olr'][80:,20:41,:]
+u850 = data['u850'][80:,20:41,:]
 #v850 = data['v850'][80:,20:42,16:66]
-u200 = data['u200'][80:,20:41,16:65]
+u200 = data['u200'][80:,20:41,:]
 #v200 = data['v200'][80:,20:42,16:66]
-h850 = data['h850'][80:,20:41,16:65]
-pr_wtr = data['pr_wtr'][80:,20:41,16:65]
-sst = data['sst'][80:,20:41,16:65]
+h850 = data['h850'][80:,20:41,:]
+pr_wtr = data['pr_wtr'][80:,20:41,:]
+sst = data['sst'][80:,20:41,:]
 time = data['time'][80:]    # 射影後にデータが10日進むため、時刻の方を前進させておく
 real_time = pd.to_datetime(time, unit='h', origin=pd.Timestamp('1800-01-01')) # 時刻をdatetime型に変換
 print(lat.shape, lon.shape, olr.shape, u850.shape, u200.shape, h850.shape, pr_wtr.shape)
@@ -100,7 +100,7 @@ def preprocess(data, rt, lead_time):
 def cnn_model():
   model = Sequential()
   # 入力画像　25×144×3 ：(緯度方向の格子点数)×(軽度方向の格子点数)×(チャンネル数、OLRのラグ)
-  model.add(Conv2D(32, (3, 3), padding='same', input_shape=(21, 49, 6), strides=(2,2), kernel_regularizer=l2(0.001)))   
+  model.add(Conv2D(32, (3, 3), padding='same', input_shape=(21, 144, 6), strides=(2,2), kernel_regularizer=l2(0.001)))   
   model.add(BatchNormalization())
   #model.add(LayerNormalization())
   model.add(Activation('relu')) 
