@@ -185,10 +185,10 @@ for lead_time in lt_box:
     model = cnn_model()
     callback = EarlyStopping(monitor='loss',patience=4)
     model.compile(optimizer=Adam(), loss='mean_squared_error')
-    history = model.fit(ipt_train, sup_train, epochs=200, batch_size=128, 
+    history = model.fit(ipt_train, sup_train, epochs=200, batch_size=128, verbose=2,
                         validation_data=(ipt_test, sup_test),
                         callbacks=[callback])
-    predict = model.predict(ipt_test, batch_size=None, verbose=1, steps=None) # モデルの出力を獲得する
+    predict = model.predict(ipt_test, batch_size=None, verbose=2, steps=None) # モデルの出力を獲得する
     print(predict.shape)
     y_test = sup_test
     culc_cor(predict, y_test, lead_time)
