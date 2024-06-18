@@ -31,7 +31,7 @@ pr_wtr = data['pr_wtr'][80:,24:49,:]
 sst = data['sst'][80:,24:49,:]
 time = data['time'][80:]    # 射影後にデータが10日進むため、時刻の方を前進させておく
 real_time = pd.to_datetime(time, unit='h', origin=pd.Timestamp('1800-01-01')) # 時刻をdatetime型に変換
-print(lat.shape, lon.shape, olr.shape, u850.shape, v850.shape, u200.shape, v200.shape, h850.shape, pr_wtr.shape)
+print(lat.shape, lon.shape, olr.shape, u850.shape, u200.shape, h850.shape, pr_wtr.shape)
 print(real_time[0], real_time[-1])
 
 # 標準化処理
