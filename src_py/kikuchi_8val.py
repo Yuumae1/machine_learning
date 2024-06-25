@@ -17,7 +17,7 @@ import pandas as pd
 
 # データの読み込み
 mode = 'mjo'
-mode = 'bsiso'
+#mode = 'bsiso'
 data = np.load('/home/maeda/data/bsiso_eeof/prepro_anomaly_8vals.npz')
 print('data = ', data.files)
 
