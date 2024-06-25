@@ -16,6 +16,8 @@ from keras.callbacks import EarlyStopping
 import pandas as pd
 
 # データの読み込み
+mode = 'mjo'
+mode = 'bsiso'
 data = np.load('/home/maeda/data/bsiso_eeof/prepro_anomaly_8vals.npz')
 print('data = ', data.files)
 
@@ -55,7 +57,10 @@ pr_wtr_norm = normalization(pr_wtr)
 sst_norm = normalization(sst)
 
 # bsiso index (eEOF) 読み込み
-data_file = '/home/maeda/data/bsiso_eeof/bsiso_rt-PCs.npz'
+if mode == 'bsiso':
+  data_file = '/home/maeda/data/bsiso_eeof/bsiso_rt-PCs.npz'
+elif mode == 'mjo':
+  data_file = '/home/maeda/data/bsiso_eeof/mjo_rt-PCs.npz'
 PC      = np.load(data_file)['rt_PCs'][:,:2]
 sign    = np.array([-1, 1]).T
 PC_norm = sign * PC / PC.std(axis=0)[np.newaxis,:]
@@ -180,7 +185,7 @@ for lead_time in lt_box:
   #ipt_test = olr_ipt_test
   print(ipt_train.shape, ipt_test.shape)
 
-  for seed in range(20,30):
+  for seed in range(20):
     print('Seed = ', seed)
     random.set_seed(seed)  # TensorFlowのseed値を設定
     np.random.seed(seed)
@@ -194,8 +199,12 @@ for lead_time in lt_box:
     print(predict.shape)
     y_test = sup_test
     culc_cor(predict, y_test, lead_time)
-    learning_curve(history, lead_time)
-    np.savez(f'/home/maeda/machine_learning/results/kikuchi-8vals_v1/cor/8vals/{(lead_time):03}day/seed{(seed):03}.npz', predict, y_test)
-    model.save(f'/home/maeda/machine_learning/results/model/kikuchi-8vals_v1/8vals/model_{(lead_time):03}day/seed{(seed):03}.hdf5')
+    #learning_curve(history, lead_time)
+    if mode == 'bsiso':
+      np.savez(f'/home/maeda/machine_learning/results/kikuchi-8vals_v1/cor/8vals/{(lead_time):03}day/seed{(seed):03}.npz', predict, y_test)
+      model.save(f'/home/maeda/machine_learning/results/model/kikuchi-8vals_v1/8vals/model_{(lead_time):03}day/seed{(seed):03}.hdf5')
+    elif mode == 'mjo':
+      np.savez(f'/home/maeda/machine_learning/results/kikuchi-8vals_mjo/cor/8vals/{(lead_time):03}day/seed{(seed):03}.npz', predict, y_test)
+      model.save(f'/home/maeda/machine_learning/results/model/kikuchi-8vals_mjo/8vals/model_{(lead_time):03}day/seed{(seed):03}.hdf5')
 
 print('==== Finish! ====')
