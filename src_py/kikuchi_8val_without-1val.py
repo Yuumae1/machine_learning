@@ -152,7 +152,7 @@ def learning_curve(history, lead_time):
 
 
 # ==== iteration program ====
-lt_box = [0, 5, 10, 15, 20, 25, 30, 35]
+lt_box = [0, 5, 10, 15, 20, 25, 30, 35, 40]
 #lt_box = np.arange(36)
 for lead_time in lt_box:
 
@@ -170,32 +170,32 @@ for lead_time in lt_box:
   sst_ipt_train, sst_ipt_test = preprocess(sst_norm, rt, lead_time)
 
   # val_box から変数を選び取って input とする
-  val_box_train = [#[u850_ipt_train, u200_ipt_train, v850_ipt_train, v200_ipt_train, h850_ipt_train, pr_wtr_ipt_train, sst_ipt_train],
-                   #[olr_ipt_train, u200_ipt_train, v850_ipt_train, v200_ipt_train, h850_ipt_train, pr_wtr_ipt_train, sst_ipt_train],
-                   #[olr_ipt_train, u850_ipt_train, v850_ipt_train, v200_ipt_train, h850_ipt_train, pr_wtr_ipt_train, sst_ipt_train],
-                   #[olr_ipt_train, u850_ipt_train, u200_ipt_train, v200_ipt_train, h850_ipt_train, pr_wtr_ipt_train, sst_ipt_train],
-                   #[olr_ipt_train, u850_ipt_train, u200_ipt_train, v850_ipt_train, h850_ipt_train, pr_wtr_ipt_train, sst_ipt_train],
+  val_box_train = [[u850_ipt_train, u200_ipt_train, v850_ipt_train, v200_ipt_train, h850_ipt_train, pr_wtr_ipt_train, sst_ipt_train],
+                   [olr_ipt_train, u200_ipt_train, v850_ipt_train, v200_ipt_train, h850_ipt_train, pr_wtr_ipt_train, sst_ipt_train],
+                   [olr_ipt_train, u850_ipt_train, v850_ipt_train, v200_ipt_train, h850_ipt_train, pr_wtr_ipt_train, sst_ipt_train],
+                   [olr_ipt_train, u850_ipt_train, u200_ipt_train, v200_ipt_train, h850_ipt_train, pr_wtr_ipt_train, sst_ipt_train],
+                   [olr_ipt_train, u850_ipt_train, u200_ipt_train, v850_ipt_train, h850_ipt_train, pr_wtr_ipt_train, sst_ipt_train],
                    [olr_ipt_train, u850_ipt_train, u200_ipt_train, v850_ipt_train, v200_ipt_train, pr_wtr_ipt_train, sst_ipt_train],
                    [olr_ipt_train, u850_ipt_train, u200_ipt_train, v850_ipt_train, v200_ipt_train, h850_ipt_train,  sst_ipt_train],
                    [olr_ipt_train, u850_ipt_train, u200_ipt_train, v850_ipt_train, v200_ipt_train, h850_ipt_train, pr_wtr_ipt_train]]
-  val_box_test  = [#[u850_ipt_test, u200_ipt_test, v850_ipt_test, v200_ipt_test, h850_ipt_test, pr_wtr_ipt_test, sst_ipt_test],
-                   #[olr_ipt_test, u200_ipt_test, v850_ipt_test, v200_ipt_test, h850_ipt_test, pr_wtr_ipt_test, sst_ipt_test],
-                   #[olr_ipt_test, u850_ipt_test, v850_ipt_test, v200_ipt_test, h850_ipt_test, pr_wtr_ipt_test, sst_ipt_test],
-                   #[olr_ipt_test, u850_ipt_test, u200_ipt_test, v200_ipt_test, h850_ipt_test, pr_wtr_ipt_test, sst_ipt_test],
-                   #[olr_ipt_test, u850_ipt_test, u200_ipt_test, v850_ipt_test, h850_ipt_test, pr_wtr_ipt_test, sst_ipt_test],
+  val_box_test  = [[u850_ipt_test, u200_ipt_test, v850_ipt_test, v200_ipt_test, h850_ipt_test, pr_wtr_ipt_test, sst_ipt_test],
+                   [olr_ipt_test, u200_ipt_test, v850_ipt_test, v200_ipt_test, h850_ipt_test, pr_wtr_ipt_test, sst_ipt_test],
+                   [olr_ipt_test, u850_ipt_test, v850_ipt_test, v200_ipt_test, h850_ipt_test, pr_wtr_ipt_test, sst_ipt_test],
+                   [olr_ipt_test, u850_ipt_test, u200_ipt_test, v200_ipt_test, h850_ipt_test, pr_wtr_ipt_test, sst_ipt_test],
+                   [olr_ipt_test, u850_ipt_test, u200_ipt_test, v850_ipt_test, h850_ipt_test, pr_wtr_ipt_test, sst_ipt_test],
                    [olr_ipt_test, u850_ipt_test, u200_ipt_test, v850_ipt_test, v200_ipt_test, pr_wtr_ipt_test, sst_ipt_test],
                    [olr_ipt_test, u850_ipt_test, u200_ipt_test, v850_ipt_test, v200_ipt_test, h850_ipt_test, sst_ipt_test],
                    [olr_ipt_test, u850_ipt_test, u200_ipt_test, v850_ipt_test, v200_ipt_test, h850_ipt_test, pr_wtr_ipt_test]]
-  wo_values = [#'olr', 'u850', 'v850', 'u200', 'v200', 
+  wo_values = ['olr', 'u850', 'v850', 'u200', 'v200', 
                'h850', 'pr_wtr', 'sst']
 # 各変数を抜いたデータを導入する:
-  for kk in range(3):
+  for kk in range(8):
     print('==== val box : {} ====='.format(wo_values[kk]))
     ipt_train = np.concatenate(val_box_train[kk], 3)
     ipt_test  = np.concatenate(val_box_test[kk], 3)
     print(ipt_train.shape, ipt_test.shape)
     
-    for seed in range(1,20):
+    for seed in range(20):
       print('Seed = ', seed)
       random.set_seed(seed)  # TensorFlowのseed値を設定
       np.random.seed(seed)
