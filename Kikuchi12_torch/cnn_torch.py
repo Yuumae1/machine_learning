@@ -68,7 +68,7 @@ class Conv(nn.Module):
     def __init__(self):
         super().__init__()
         # Convolutions(input_channels, output_channels, kernel_size, stride, padding)
-        self.c1 = nn.Conv2d(8, 32, kernel_size=3, stride=2, padding=1)
+        self.c1 = nn.Conv2d(8*3, 32, kernel_size=3, stride=2, padding=1)
         self.b1 = nn.BatchNorm2d(32)
         self.a1 = nn.ReLU()
         self.d1 = nn.Dropout(0.2)
@@ -185,11 +185,11 @@ if __name__ == '__main__':
     print('==== lead time : {} day ====='.format(lead_time))
     
     for i in range(x.shape[3]):
-      _x_train, _x_test = preprocess(x, real_time, 0)
+      _x_train, _x_test = preprocess(x[:,:,:,i], real_time, 0)
       x_train.append(_x_train)
       x_test.append(_x_test)
-    x_train = np.array(x_train)
-    x_test = np.array(x_test)
+    x_train = np.stack(np.array(x_train), 3)
+    x_test = np.stack(np.array(x_test), 3)
     print('x_train, x_test = ', x_train.shape, x_test.shape)
     rt, t_train, t_test, output_shape = indexing(lead_time=0)
     print('rt, t_train, t_test = ', rt.shape, t_train.shape, t_test.shape)
