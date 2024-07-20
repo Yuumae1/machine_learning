@@ -177,8 +177,7 @@ if __name__ == '__main__':
     loss = loss_fn(preds, t)
     return loss, preds
   
-  batch_size = 32
-  n_batches = x_train.shape[0] // batch_size
+
   #lt_box = [0, 5, 10, 15, 20, 25, 30, 35]
   lt_box = np.arange(1)
   
@@ -195,6 +194,10 @@ if __name__ == '__main__':
     rt, t_train, t_test, output_shape = indexing(lead_time=0)
     print('rt, t_train, t_test = ', rt.shape, t_train.shape, t_test.shape)
 
+    batch_size = 32
+    n_batches = x_train.shape[0] // batch_size
+    epoch_num = 200
+    
     for seed in range(20):
       print('Seed = ', seed)
       set_seed(seed)
@@ -206,7 +209,7 @@ if __name__ == '__main__':
       loss_fn = nn.MSELoss()
       optimizer = optimizers.Adam(model.parameters(), lr=0.001)
       
-      for epoch in range(200):
+      for epoch in range(epoch_num):
         train_loss = 0.
         x_, t_ = shuffle(x_train, t_train)
         x_ = torch.Tensor(x_).to(device)
