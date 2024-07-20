@@ -184,7 +184,7 @@ if __name__ == '__main__':
   for lead_time in lt_box:
     print('==== lead time : {} day ====='.format(lead_time))
     
-    for i in range(x.shape[3]):
+    for i in range(8):
       _x_train, _x_test = preprocess(x[:,:,:,i], real_time, 0)
       x_train.append(_x_train)
       x_test.append(_x_test)
