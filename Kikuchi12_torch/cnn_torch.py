@@ -139,7 +139,7 @@ if __name__ == '__main__':
   x = np.stack([olr, u850, v850, u200, v200, h850, pr_wtr, sst], 3)
   x_train = []
   x_test = []
-  x = [normalization(x[:,:,:,i]) for i in range(x.shape[3])] 
+  x = np.array(normalization(x[:,:,:,i]) for i in range(x.shape[3]))
 
   
   # bsiso index (eEOF) 読み込み
