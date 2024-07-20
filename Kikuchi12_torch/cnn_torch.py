@@ -198,7 +198,7 @@ if __name__ == '__main__':
     n_batches = x_train.shape[0] // batch_size
     epoch_num = 200
     
-    for seed in range(20):
+    for seed in range(1):
       print('Seed = ', seed)
       set_seed(seed)
       model = Conv().to(device)
