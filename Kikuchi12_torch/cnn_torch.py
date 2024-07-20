@@ -137,9 +137,12 @@ if __name__ == '__main__':
 
 
   x = np.stack([olr, u850, v850, u200, v200, h850, pr_wtr, sst], 3)
+  x_n = np.zeros(x.shape)
+  for i in range(x.shape[3]):
+    x_n[:,:,:,i] = normalization(x[:,:,:,i])
+    
   x_train = []
   x_test = []
-  x = np.array(normalization(x[:,:,:,i]) for i in range(x.shape[3]))
 
   
   # bsiso index (eEOF) 読み込み
@@ -185,7 +188,7 @@ if __name__ == '__main__':
     print('==== lead time : {} day ====='.format(lead_time))
     
     for i in range(8):
-      _x_train, _x_test = preprocess(x[:,:,:,i], real_time, 0)
+      _x_train, _x_test = preprocess(x_n[:,:,:,i], real_time, 0)
       x_train.append(_x_train)
       x_test.append(_x_test)
     x_train = np.stack(np.array(x_train), 3)
