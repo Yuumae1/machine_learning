@@ -140,7 +140,7 @@ if __name__ == '__main__':
   x_n = np.zeros(x.shape)
   for i in range(x.shape[3]):
     x_n[:,:,:,i] = normalization(x[:,:,:,i])
-    
+  print('x_n = ', x_n.shape)  
   x_train = []
   x_test = []
 
