@@ -195,7 +195,7 @@ if __name__ == '__main__':
   
 
   #lt_box = [0, 5, 10, 15, 20, 25, 30, 35]
-  lt_box = np.arange(15, 16)
+  lt_box = np.arange(0, 35)
   
   for lead_time in lt_box:
     print('==== lead time : {} day ====='.format(lead_time))
@@ -215,9 +215,9 @@ if __name__ == '__main__':
 
     batch_size = 128
     n_batches = x_train.shape[0] // batch_size
-    epoch_num = 20
+    epoch_num = 200
     
-    for seed in range(1):
+    for seed in range(20):
       print('Seed = ', seed)
       set_seed(seed)
       model = Conv().to(device)  
