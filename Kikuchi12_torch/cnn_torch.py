@@ -10,7 +10,8 @@ from sklearn.utils import shuffle
 #from torchvision import transforms
 #from torch.utils.data import DataLoader
 #from PIL import Image
-import EarlyStopping
+from callbacks import EarlyStopping
+
 
 def set_seed(seed):
   random.seed(seed)
@@ -38,8 +39,8 @@ def indexing(lead_time):
   t_train = t_data[idx]
   idx = np.where((rt.year > 2015))[0]
   t_test = t_data[idx]
-  print('t_train, t_test', t_train.shape, t_test.shape)
-  return data, rt, t_train, t_test, output_shape
+  print('t_train, t_test =', t_train.shape, t_test.shape)
+  return rt, t_train, t_test, output_shape
 
 def preprocess(data, rt, lead_time):
   ipt_lag0  = data[10:-lead_time-1]
@@ -47,46 +48,51 @@ def preprocess(data, rt, lead_time):
   ipt_lag10 = data[:-lead_time-11]
   # =========
   # 訓練データの作成(通年データとする)
-  idx = np.where((rt.year <= 2015))[0]
-  ipt_lag0_train = ipt_lag0[idx]
-  ipt_lag5_train = ipt_lag5[idx]
-  ipt_lag10_train = ipt_lag10[idx]
+  idx1 = np.where((rt.year <= 2015))[0]
+  ipt_lag0_train = ipt_lag0[idx1]
+  ipt_lag5_train = ipt_lag5[idx1]
+  ipt_lag10_train = ipt_lag10[idx1]
   ipt_train = np.stack([ipt_lag0_train, ipt_lag5_train, ipt_lag10_train], 3)
 
   # 検証データの作成
-  idx = np.where((rt.year > 2015))[0]
-  ipt_lag0_test = ipt_lag0[idx]
-  ipt_lag5_test = ipt_lag5[idx]
-  ipt_lag10_test = ipt_lag10[idx]
+  idx2 = np.where((rt.year > 2015))[0]
+  ipt_lag0_test = ipt_lag0[idx2]
+  ipt_lag5_test = ipt_lag5[idx2]
+  ipt_lag10_test = ipt_lag10[idx2]
   #ipt_test = ipt[idx]
   #ipt_test = np.concatenate([ipt_lag0_test, ipt_lag5_test, ipt_lag10_test], 1)
   ipt_test = np.stack([ipt_lag0_test, ipt_lag5_test, ipt_lag10_test], 3)
   return ipt_train, ipt_test
 
 
+'''
+model definition
+'''
 class Conv(nn.Module):
     def __init__(self):
         super().__init__()
         # Convolutions(input_channels, output_channels, kernel_size, stride, padding)
-        self.c1 = nn.Conv2d(8*3, 32, kernel_size=3, stride=2, padding=1)
-        self.b1 = nn.BatchNorm2d(32)
-        self.a1 = nn.ReLU()
-        self.d1 = nn.Dropout(0.2)
-        self.c2 = nn.Conv2d(32, 64, kernel_size=2, stride=2, padding=1)
-        self.b2 = nn.BatchNorm2d(64)
-        self.a2 = nn.ReLU()
-        self.d2 = nn.Dropout(0.2)
-        self.c3 = nn.Conv2d(64, 128, kernel_size=2, stride=2, padding=1)
-        self.b3 = nn.BatchNorm2d(128)
-        self.a3 = nn.ReLU()
-        self.d3 = nn.Dropout(0.2)
+        self.layer1 = nn.Sequential(
+          nn.Conv2d(8*3, 32, kernel_size=3, stride=2, padding=1),
+          nn.BatchNorm2d(32),
+          nn.ReLU(),
+          nn.Dropout(0.2))
+        self.layer2 = nn.Sequential(
+          nn.Conv2d(32, 64, kernel_size=2, stride=2, padding=1),
+          nn.BatchNorm2d(64), 
+          nn.ReLU(),
+          nn.Dropout(0.2))
+        self.layer3 = nn.Sequential(
+          nn.Conv2d(64, 128, kernel_size=2, stride=2, padding=1),
+          nn.BatchNorm2d(128),
+          nn.ReLU(),
+          nn.Dropout(0.2))
         self.fc = nn.Linear(128*4*4, 2)
         
-
     def forward(self, x):
-        x = self.d1(self.a1(self.b1(self.c1(x))))
-        x = self.d2(self.a2(self.b2(self.c2(x))))
-        x = self.d3(self.a3(self.b3(self.c3(x))))
+        x = self.layer1(x)
+        x = self.layer2(x)
+        x = self.layer3(x)
         x = x.view(-1, 128*4*4)
         x = self.fc(x)
         return x
@@ -111,7 +117,9 @@ def learning_curve(history, lead_time):
   plt.close()
 
 
-
+'''
+main program
+'''
 if __name__ == '__main__':
   np.random.seed(123)
   torch.manual_seed(123)
@@ -158,13 +166,11 @@ if __name__ == '__main__':
   print('PCs = ', PC_norm.shape)
   print('time PCs= ', time2.shape)
   print('real time PCs = ', real_time2[0], real_time2[-1])
-  
 
   
   '''
   training description
   '''
-  
   def train_step(x, t):
       model.train()
       preds = model(x)
@@ -186,18 +192,21 @@ if __name__ == '__main__':
   
   for lead_time in lt_box:
     print('==== lead time : {} day ====='.format(lead_time))
-    
+    # answer data
+    rt, t_train, t_test, output_shape = indexing(lead_time=0)
+    print('rt, t_train, t_test = ', rt.shape, t_train.shape, t_test.shape)
+    # input data
     for i in range(8):
-      _x_train, _x_test = preprocess(x_n[:,:,:,i], real_time, 0)
+      _x_train, _x_test = preprocess(x_n[:,:,:,i], rt, lead_time=0)
       x_train.append(_x_train)
       x_test.append(_x_test)
     x_train = np.stack(np.array(x_train), 3)
     x_test = np.stack(np.array(x_test), 3)
-    print('x_train, x_test = ', x_train.shape, x_test.shape)
+    print('x_train, x_test =', x_train.shape, x_test.shape)
     rt, t_train, t_test, output_shape = indexing(lead_time=0)
-    print('rt, t_train, t_test = ', rt.shape, t_train.shape, t_test.shape)
+    print('rt, t_train, t_test =', rt.shape, t_train.shape, t_test.shape)
 
-    batch_size = 32
+    batch_size = 128
     n_batches = x_train.shape[0] // batch_size
     epoch_num = 200
     
