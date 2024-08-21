@@ -203,6 +203,8 @@ if __name__ == '__main__':
     rt, t_train, t_test, output_shape = indexing(lead_time)
     print('rt, t_train, t_test = ', rt.shape, t_train.shape, t_test.shape)
     # input data
+    x_train = []
+    x_test = []
     for i in range(8):
       _x_train, _x_test = preprocess(x_n[:,:,:,i], rt, lead_time)
       x_train.append(_x_train)
