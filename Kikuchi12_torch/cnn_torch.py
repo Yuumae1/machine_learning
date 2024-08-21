@@ -11,6 +11,7 @@ from sklearn.utils import shuffle
 #from torch.utils.data import DataLoader
 #from PIL import Image
 from callbacks import EarlyStopping
+from torchsummary import summary
 
 
 def set_seed(seed):
@@ -71,7 +72,6 @@ model definition
 class Conv(nn.Module):
     def __init__(self):
         super().__init__()
-        # Convolutions(input_channels, output_channels, kernel_size, stride, padding)
         self.layer1 = nn.Sequential(
           nn.Conv2d(8*3, 32, kernel_size=3, stride=2, padding=1),
           nn.BatchNorm2d(32),
@@ -87,14 +87,15 @@ class Conv(nn.Module):
           nn.BatchNorm2d(128),
           nn.ReLU(),
           nn.Dropout(0.2))
-        self.fc = nn.Linear(128*4*4, 2)
+        self.fc1 = nn.Linear(128*4*19, 2)
+        
         
     def forward(self, x):
         x = self.layer1(x)
         x = self.layer2(x)
         x = self.layer3(x)
-        x = x.view(-1, 128*4*4)
-        x = self.fc(x)
+        x = x.reshape(x.size(0), -1)
+        x = self.fc1(x)
         return x
 
 
@@ -200,20 +201,21 @@ if __name__ == '__main__':
       _x_train, _x_test = preprocess(x_n[:,:,:,i], rt, lead_time=0)
       x_train.append(_x_train)
       x_test.append(_x_test)
-    x_train = np.stack(np.array(x_train), 3)
-    x_test = np.stack(np.array(x_test), 3)
+    x_train = np.stack(np.array(x_train), 3).reshape(-1, 25, 144, 8*3).transpose(0, 3, 1, 2)
+    x_test = np.stack(np.array(x_test), 3).reshape(-1, 25, 144, 8*3).transpose(0, 3, 1, 2)
     print('x_train, x_test =', x_train.shape, x_test.shape)
     rt, t_train, t_test, output_shape = indexing(lead_time=0)
     print('rt, t_train, t_test =', rt.shape, t_train.shape, t_test.shape)
 
     batch_size = 128
     n_batches = x_train.shape[0] // batch_size
-    epoch_num = 200
+    epoch_num = 20
     
     for seed in range(1):
       print('Seed = ', seed)
       set_seed(seed)
-      model = Conv().to(device)
+      model = Conv().to(device)  
+      summary(model, (24, 25, 144))
       callback = EarlyStopping(patience=5, 
                                verbose=1, 
                                path=f'/home/maeda/machine_learning/results/model/kikuchi-8vals_v1/8vals/model_{(lead_time):03}day/seed{(seed):03}.hdf5'
@@ -232,22 +234,24 @@ if __name__ == '__main__':
             end = start + batch_size
             loss, preds = train_step(x_[start:end], t_[start:end])
             train_loss += loss.item()
-        if epoch % 10 == 0:
-            print('epoch: {}, loss: {:.3}'.format(
-                epoch+1,
-                train_loss
-            ))
+
+        x_test = torch.Tensor(x_test).to(device)
+        t_test = torch.Tensor(t_test).to(device)
+        test_loss, preds_test = test_step(x_test, t_test)
+        print('epoch: {}, loss: {:.3}, test loss: {:.3}'.format(
+          epoch+1,
+          train_loss/n_batches,
+          test_loss.item()
+          ))
+        
         if callback.early_stop:
           print('Early stopping')
           break
       
-
-      x_test = torch.Tensor(x_test).to(device)
-      t_test = torch.Tensor(t_test).to(device)
-      loss, preds_test = test_step(x_test, t_test)
       predict = preds_test.cpu().detach().numpy()
+      t_test  = t_test.cpu().detach().numpy()
       print(predict.shape)
-      print('test loss: {:.3}'.format(loss.item()))
+        
       culc_cor(predict, t_test, lead_time)
       #learning_curve(history, lead_time)
       # model save
