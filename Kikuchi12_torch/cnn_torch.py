@@ -87,8 +87,13 @@ class Conv(nn.Module):
           nn.BatchNorm2d(128),
           nn.ReLU(),
           nn.Dropout(0.2))
-        self.fc1 = nn.Linear(128*4*19, 2)
-        
+        self.fc1 = nn.Sequential(
+          nn.Linear(128*4*19, 128),
+          nn.BatchNorm1d(128),
+          nn.ReLU(),
+          nn.Dropout(0.2))
+        self.fc2 = nn.Linear(128, 2)
+        #self.fc1 = nn.Linear(128*4*19, 2)
         
     def forward(self, x):
         x = self.layer1(x)
@@ -96,6 +101,7 @@ class Conv(nn.Module):
         x = self.layer3(x)
         x = x.reshape(x.size(0), -1)
         x = self.fc1(x)
+        x = self.fc2(x)
         return x
 
 
@@ -189,22 +195,22 @@ if __name__ == '__main__':
   
 
   #lt_box = [0, 5, 10, 15, 20, 25, 30, 35]
-  lt_box = np.arange(1)
+  lt_box = np.arange(15, 16)
   
   for lead_time in lt_box:
     print('==== lead time : {} day ====='.format(lead_time))
     # answer data
-    rt, t_train, t_test, output_shape = indexing(lead_time=0)
+    rt, t_train, t_test, output_shape = indexing(lead_time)
     print('rt, t_train, t_test = ', rt.shape, t_train.shape, t_test.shape)
     # input data
     for i in range(8):
-      _x_train, _x_test = preprocess(x_n[:,:,:,i], rt, lead_time=0)
+      _x_train, _x_test = preprocess(x_n[:,:,:,i], rt, lead_time)
       x_train.append(_x_train)
       x_test.append(_x_test)
     x_train = np.stack(np.array(x_train), 3).reshape(-1, 25, 144, 8*3).transpose(0, 3, 1, 2)
     x_test = np.stack(np.array(x_test), 3).reshape(-1, 25, 144, 8*3).transpose(0, 3, 1, 2)
     print('x_train, x_test =', x_train.shape, x_test.shape)
-    rt, t_train, t_test, output_shape = indexing(lead_time=0)
+    rt, t_train, t_test, output_shape = indexing(lead_time)
     print('rt, t_train, t_test =', rt.shape, t_train.shape, t_test.shape)
 
     batch_size = 128
