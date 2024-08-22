@@ -20,7 +20,9 @@ class EarlyStopping:
         特殊(call)メソッド
         実際に学習ループ内で最小lossを更新したか否かを計算させる部分
         """
-        score = -val_loss
+        score = val_loss    # MSE の最小スコア
+        #score = -val_loss    # Cross entropy の最小スコア
+        
 
         if self.best_score is None:  #1Epoch目の処理
             self.best_score = score   #1Epoch目はそのままベストスコアとして記録する
