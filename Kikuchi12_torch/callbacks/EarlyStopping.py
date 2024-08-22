@@ -20,8 +20,7 @@ class EarlyStopping:
         特殊(call)メソッド
         実際に学習ループ内で最小lossを更新したか否かを計算させる部分
         """
-        score = val_loss    # MSE の最小スコア
-        #score = -val_loss    # Cross entropy の最小スコア
+        score = -val_loss    # 最小スコア
         
 
         if self.best_score is None:  #1Epoch目の処理
@@ -37,6 +36,8 @@ class EarlyStopping:
             self.best_score = score  #ベストスコアを上書き
             self.checkpoint(val_loss, model)  #モデルを保存してスコア表示
             self.counter = 0  #ストップカウンタリセット
+            
+        return self.early_stop
 
     def checkpoint(self, val_loss, model):
         '''ベストスコア更新時に実行されるチェックポイント関数'''

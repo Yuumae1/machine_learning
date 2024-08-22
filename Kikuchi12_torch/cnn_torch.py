@@ -224,10 +224,10 @@ if __name__ == '__main__':
       set_seed(seed)
       model = Conv().to(device)  
       summary(model, (24, 25, 144))
-      callback = EarlyStopping(patience=5, 
-                               verbose=1, 
-                               path=f'/home/maeda/machine_learning/results/model/kikuchi-8vals_v1/8vals/model_{(lead_time):03}day/seed{(seed):03}.hdf5'
-                               )
+      es = EarlyStopping(patience=5, 
+                         verbose=1, 
+                         path=f'/home/maeda/machine_learning/results/model/kikuchi-8vals_v1/8vals/model_{(lead_time):03}day/seed{(seed):03}.hdf5'
+                        )
       loss_fn = nn.MSELoss()
       optimizer = optimizers.Adam(model.parameters(), lr=0.001)
       
@@ -252,7 +252,10 @@ if __name__ == '__main__':
           test_loss.item()
           ))
         
-        if callback.early_stop:
+        #if callback.early_stop:
+        #  print('Early stopping')
+        #  break
+        if es(test_loss.item(), model):
           print('Early stopping')
           break
       
