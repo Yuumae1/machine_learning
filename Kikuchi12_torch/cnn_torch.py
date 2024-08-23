@@ -195,7 +195,7 @@ if __name__ == '__main__':
   
 
   #lt_box = [0, 5, 10, 15, 20, 25, 30, 35]
-  lt_box = np.arange(0, 35)
+  lt_box = np.arange(35, 41)
   
   for lead_time in lt_box:
     print('==== lead time : {} day ====='.format(lead_time))
