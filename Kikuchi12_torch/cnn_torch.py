@@ -226,7 +226,7 @@ if __name__ == '__main__':
       summary(model, (24, 25, 144))
       es = EarlyStopping(patience=5, 
                          verbose=1, 
-                         path=f'/home/maeda/machine_learning/results/model/kikuchi-8vals_v1/8vals/model_{(lead_time):03}day/seed{(seed):03}.hdf5'
+                         path=f'/home/maeda/machine_learning/results/model/kikuchi-8vals_v1/8vals/model_{(lead_time):03}day/seed{(seed):03}.pth'
                         )
       loss_fn = nn.MSELoss()
       optimizer = optimizers.Adam(model.parameters(), lr=0.001)
