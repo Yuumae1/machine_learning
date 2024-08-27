@@ -122,7 +122,7 @@ for lead_time in lt_box:
   model = torch.load(model_path)
   
   # Shap Calculation
-  shap.explainers._deep.deep_tf.op_handlers["FusedBatchNormV3"] = shap.explainers._deep.deep_tf.passthrough # batch norm を挟む場合、このコードが必要：https://github.com/shap/shap/issues/1406
+  #shap.explainers._deep.deep_tf.op_handlers["FusedBatchNormV3"] = shap.explainers._deep.deep_tf.passthrough # batch norm を挟む場合、このコードが必要：https://github.com/shap/shap/issues/1406
   explainer = shap.DeepExplainer(model=model, data=datasets)
   shap_values = explainer.shap_values(datasets, check_additivity=False)
   shap_values = np.array(shap_values)
