@@ -129,7 +129,7 @@ seed = [7, 4, 4, 2, 6, 6, 6, 2, 8, 8,
         8]
 
 #lt_box = np.arange(5,36)
-lt_box = np.arange(0,1)
+lt_box = np.arange(0,31,5)
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 for lead_time in lt_box:
@@ -152,7 +152,7 @@ for lead_time in lt_box:
                         pr_wtr_ipt_test, sst_ipt_test], 3)
   print(ipt_test.shape)
   # jja のみを渡す
-  #jja = np.isin(sup_rt.month, [6, 7, 8])
+  jja = np.isin(sup_rt.month, [6, 7, 8])
   datasets = ipt_test.transpose(0,3,1,2)
   datasets = torch.tensor(datasets, dtype=torch.float32).to(device)
   print(datasets.shape)
@@ -165,7 +165,7 @@ for lead_time in lt_box:
   # Shap Calculation
   #shap.explainers._deep.deep_tf.op_handlers["FusedBatchNormV3"] = shap.explainers._deep.deep_tf.passthrough # batch norm を挟む場合、このコードが必要：https://github.com/shap/shap/issues/1406
   explainer = shap.DeepExplainer(model=model, data=datasets)
-  shap_values = explainer.shap_values(datasets, check_additivity=False)
+  shap_values = explainer.shap_values(datasets[jja], check_additivity=False)
   shap_values = np.array(shap_values)
 
   print(shap_values.shape)
