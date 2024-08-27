@@ -130,6 +130,7 @@ seed = [7, 4, 4, 2, 6, 6, 6, 2, 8, 8,
 
 #lt_box = np.arange(5,36)
 lt_box = np.arange(0,1)
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 for lead_time in lt_box:
 
@@ -153,10 +154,11 @@ for lead_time in lt_box:
   # jja のみを渡す
   #jja = np.isin(sup_rt.month, [6, 7, 8])
   datasets = ipt_test.transpose(0,3,1,2)
+  datasets = torch.tensor(datasets, dtype=torch.float32).to(device)
   print(datasets.shape)
 
   model_path = f'/home/maeda/machine_learning/results/model/kikuchi-single/8vals/model_{(lead_time):03}day/seed{(seed[lead_time]):03}.pth'
-  model = Conv()
+  model = Conv().to(device)
   model.load_state_dict(torch.load(model_path))
   model.eval()
   
