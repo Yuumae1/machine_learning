@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
-import torch 
+import torch
+import torch.nn as nn
 import shap
 
 
@@ -83,6 +84,42 @@ def preprocess(data, rt, lead_time):
   #ipt_test = np.stack([ipt_lag0_test, ipt_lag5_test, ipt_lag10_test], 3)
   return ipt_test
 
+class Conv(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.layer1 = nn.Sequential(
+          nn.Conv2d(8, 32, kernel_size=3, stride=2, padding=1),
+          nn.BatchNorm2d(32),
+          nn.ReLU(),
+          nn.Dropout(0.2))
+        self.layer2 = nn.Sequential(
+          nn.Conv2d(32, 64, kernel_size=2, stride=2, padding=1),
+          nn.BatchNorm2d(64), 
+          nn.ReLU(),
+          nn.Dropout(0.2))
+        self.layer3 = nn.Sequential(
+          nn.Conv2d(64, 128, kernel_size=2, stride=2, padding=1),
+          nn.BatchNorm2d(128),
+          nn.ReLU(),
+          nn.Dropout(0.2))
+        self.fc1 = nn.Sequential(
+          nn.Linear(128*4*19, 128),
+          nn.BatchNorm1d(128),
+          nn.ReLU(),
+          nn.Dropout(0.2))
+        self.fc2 = nn.Linear(128, 2)
+        #self.fc1 = nn.Linear(128*4*19, 2)
+        
+    def forward(self, x):
+        x = self.layer1(x)
+        x = self.layer2(x)
+        x = self.layer3(x)
+        x = x.reshape(x.size(0), -1)
+        x = self.fc1(x)
+        x = self.fc2(x)
+        return x
+
+
 # ==== main program ====
 
 # モデルの読み込み
@@ -119,7 +156,9 @@ for lead_time in lt_box:
   print(datasets.shape)
 
   model_path = f'/home/maeda/machine_learning/results/model/kikuchi-single/8vals/model_{(lead_time):03}day/seed{(seed[lead_time]):03}.pth'
-  model = torch.load(model_path)
+  model = Conv()
+  model.load_state_dict(torch.load(model_path))
+  model.eval()
   
   # Shap Calculation
   #shap.explainers._deep.deep_tf.op_handlers["FusedBatchNormV3"] = shap.explainers._deep.deep_tf.passthrough # batch norm を挟む場合、このコードが必要：https://github.com/shap/shap/issues/1406
