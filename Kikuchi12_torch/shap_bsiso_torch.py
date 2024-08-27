@@ -109,9 +109,9 @@ for lead_time in lt_box:
   pr_wtr_ipt_test = preprocess(pr_wtr_norm, rt, lead_time)
   sst_ipt_test = preprocess(sst_norm, rt, lead_time)
 
-  ipt_test  = np.concatenate([olr_ipt_test, u850_ipt_test,  u200_ipt_test,
-                              v850_ipt_test, v200_ipt_test, h850_ipt_test, 
-                              pr_wtr_ipt_test, sst_ipt_test], 3)
+  ipt_test  = np.stack([olr_ipt_test, u850_ipt_test,  u200_ipt_test,
+                        v850_ipt_test, v200_ipt_test, h850_ipt_test, 
+                        pr_wtr_ipt_test, sst_ipt_test], 3)
   print(ipt_test.shape)
   # jja のみを渡す
   #jja = np.isin(sup_rt.month, [6, 7, 8])
