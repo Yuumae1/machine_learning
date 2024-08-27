@@ -118,7 +118,7 @@ for lead_time in lt_box:
   datasets = ipt_test
   print(datasets.shape)
 
-  model_path = f'/home/maeda/machine_learning/results/model/kikuchi-single/8vals/model_{(lead_time):03}day/seed{(seed):03}.pth'
+  model_path = f'/home/maeda/machine_learning/results/model/kikuchi-single/8vals/model_{(lead_time):03}day/seed{(seed[lead_time]):03}.pth'
   model = torch.load(model_path)
   
   # Shap Calculation
