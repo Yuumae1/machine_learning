@@ -152,7 +152,7 @@ for lead_time in lt_box:
   print(ipt_test.shape)
   # jja のみを渡す
   #jja = np.isin(sup_rt.month, [6, 7, 8])
-  datasets = ipt_test
+  datasets = ipt_test.transpose(0,3,1,2)
   print(datasets.shape)
 
   model_path = f'/home/maeda/machine_learning/results/model/kikuchi-single/8vals/model_{(lead_time):03}day/seed{(seed[lead_time]):03}.pth'
