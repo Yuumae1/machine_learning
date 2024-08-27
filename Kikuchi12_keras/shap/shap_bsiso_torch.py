@@ -73,25 +73,25 @@ def indexing(lead_time):
 
 # 入力データの前処理
 def preprocess(data, rt, lead_time):
-  ipt_lag0  = data[10:-lead_time-1]
-  ipt_lag5  = data[5:-lead_time-6]
-  ipt_lag10 = data[:-lead_time-11]
+  ipt  = data[10:-lead_time-1]
+  #ipt_lag5  = data[5:-lead_time-6]
+  #ipt_lag10 = data[:-lead_time-11]
 
   # 検証データの作成
   idx = np.where((rt.year > 2015))[0]
-  ipt_lag0_test = ipt_lag0[idx]
-  ipt_lag5_test = ipt_lag5[idx]
-  ipt_lag10_test = ipt_lag10[idx]
-  ipt_test = np.stack([ipt_lag0_test, ipt_lag5_test, ipt_lag10_test], 3)
+  ipt_test = ipt[idx]
+  #ipt_lag5_test = ipt_lag5[idx]
+  #ipt_lag10_test = ipt_lag10[idx]
+  #ipt_test = np.stack([ipt_lag0_test, ipt_lag5_test, ipt_lag10_test], 3)
   return ipt_test
 
 # ==== main program ====
 
 # モデルの読み込み
-seed = [ 8, 15, 16,  0, 19,  0,  0, 19, 12,  7,
-         1, 19, 18, 17, 17,  2,  7, 16, 18, 16,
-        16, 15, 16, 16, 12, 13, 19, 19, 18, 18, 
-        18, 13, 15, 18, 18, 18]
+seed = [7, 4, 4, 2, 6, 6, 6, 2, 8, 8,
+        6, 6, 6, 6, 8, 6, 9, 1, 1, 1, 
+        1, 1, 1, 4, 8, 4, 7, 5, 4, 4,
+        8]
 
 #lt_box = np.arange(5,36)
 lt_box = np.arange(0,1)
