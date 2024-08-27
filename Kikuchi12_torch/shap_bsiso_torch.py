@@ -1,10 +1,8 @@
 import numpy as np
-from numpy.linalg.linalg import norm
-import torch 
-import torch.nn as nn
 import pandas as pd
+import torch 
 import shap
-import numpy as np
+
 
 # データの読み込み
 data = np.load('/home/maeda/data/bsiso_eeof/prepro_anomaly_8vals.npz')
@@ -131,4 +129,4 @@ for lead_time in lt_box:
 
   print(shap_values.shape)
   print(shap_values.mean(axis=(0,1,2)))
-  np.savez(f'/home/maeda/data/bsiso_shap/torch_{(lead_time):03}day.npz', shap_values=shap_values)
+  np.savez(f'/home/maeda/data/bsiso_shap/torch_{(lead_time):03}day.npz', shap_values=shap_values, time=sup_rt)
