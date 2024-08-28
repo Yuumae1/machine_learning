@@ -1,10 +1,9 @@
 import numpy as np
-from numpy.linalg.linalg import norm
-import torch 
-import torch.nn as nn
 import pandas as pd
+import torch
+import torch.nn as nn
 import shap
-import numpy as np
+
 
 # データの読み込み
 data = np.load('/home/maeda/data/bsiso_eeof/prepro_anomaly_8vals.npz')
@@ -73,28 +72,65 @@ def indexing(lead_time):
 
 # 入力データの前処理
 def preprocess(data, rt, lead_time):
-  ipt_lag0  = data[10:-lead_time-1]
-  ipt_lag5  = data[5:-lead_time-6]
-  ipt_lag10 = data[:-lead_time-11]
+  ipt  = data[10:-lead_time-1]
+  #ipt_lag5  = data[5:-lead_time-6]
+  #ipt_lag10 = data[:-lead_time-11]
 
   # 検証データの作成
   idx = np.where((rt.year > 2015))[0]
-  ipt_lag0_test = ipt_lag0[idx]
-  ipt_lag5_test = ipt_lag5[idx]
-  ipt_lag10_test = ipt_lag10[idx]
-  ipt_test = np.stack([ipt_lag0_test, ipt_lag5_test, ipt_lag10_test], 3)
+  ipt_test = ipt[idx]
+  #ipt_lag5_test = ipt_lag5[idx]
+  #ipt_lag10_test = ipt_lag10[idx]
+  #ipt_test = np.stack([ipt_lag0_test, ipt_lag5_test, ipt_lag10_test], 3)
   return ipt_test
+
+class Conv(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.layer1 = nn.Sequential(
+          nn.Conv2d(8, 32, kernel_size=3, stride=2, padding=1),
+          nn.BatchNorm2d(32),
+          nn.ReLU(),
+          nn.Dropout(0.2))
+        self.layer2 = nn.Sequential(
+          nn.Conv2d(32, 64, kernel_size=2, stride=2, padding=1),
+          nn.BatchNorm2d(64), 
+          nn.ReLU(),
+          nn.Dropout(0.2))
+        self.layer3 = nn.Sequential(
+          nn.Conv2d(64, 128, kernel_size=2, stride=2, padding=1),
+          nn.BatchNorm2d(128),
+          nn.ReLU(),
+          nn.Dropout(0.2))
+        self.fc1 = nn.Sequential(
+          nn.Linear(128*4*19, 128),
+          nn.BatchNorm1d(128),
+          nn.ReLU(),
+          nn.Dropout(0.2))
+        self.fc2 = nn.Linear(128, 2)
+        #self.fc1 = nn.Linear(128*4*19, 2)
+        
+    def forward(self, x):
+        x = self.layer1(x)
+        x = self.layer2(x)
+        x = self.layer3(x)
+        x = x.reshape(x.size(0), -1)
+        x = self.fc1(x)
+        x = self.fc2(x)
+        return x
+
 
 # ==== main program ====
 
 # モデルの読み込み
-seed = [ 8, 15, 16,  0, 19,  0,  0, 19, 12,  7,
-         1, 19, 18, 17, 17,  2,  7, 16, 18, 16,
-        16, 15, 16, 16, 12, 13, 19, 19, 18, 18, 
-        18, 13, 15, 18, 18, 18]
+seed = [7, 4, 4, 2, 6, 6, 6, 2, 8, 8,
+        6, 6, 6, 6, 8, 6, 9, 1, 1, 1, 
+        1, 1, 1, 4, 8, 4, 7, 5, 4, 4,
+        8]
 
 #lt_box = np.arange(5,36)
-lt_box = np.arange(0,1)
+lt_box = np.arange(0,31,5)
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 for lead_time in lt_box:
 
@@ -111,24 +147,27 @@ for lead_time in lt_box:
   pr_wtr_ipt_test = preprocess(pr_wtr_norm, rt, lead_time)
   sst_ipt_test = preprocess(sst_norm, rt, lead_time)
 
-  ipt_test  = np.concatenate([olr_ipt_test, u850_ipt_test,  u200_ipt_test,
-                              v850_ipt_test, v200_ipt_test, h850_ipt_test, 
-                              pr_wtr_ipt_test, sst_ipt_test], 3)
+  ipt_test  = np.stack([olr_ipt_test, u850_ipt_test,  u200_ipt_test,
+                        v850_ipt_test, v200_ipt_test, h850_ipt_test, 
+                        pr_wtr_ipt_test, sst_ipt_test], 3)
   print(ipt_test.shape)
   # jja のみを渡す
-  #jja = np.isin(sup_rt.month, [6, 7, 8])
-  datasets = ipt_test
+  jja = np.isin(sup_rt.month, [6, 7, 8])
+  datasets = ipt_test.transpose(0,3,1,2)
+  datasets = torch.tensor(datasets, dtype=torch.float32).to(device)
   print(datasets.shape)
 
-  model_path = f'/home/maeda/machine_learning/results/model/kikuchi-8vals_v1/8vals/model_{(lead_time):03}day/seed000.pth'
-  model = torch.load(model_path)
+  model_path = f'/home/maeda/machine_learning/results/model/kikuchi-single/8vals/model_{(lead_time):03}day/seed{(seed[lead_time]):03}.pth'
+  model = Conv().to(device)
+  model.load_state_dict(torch.load(model_path))
+  model.eval()
   
   # Shap Calculation
-  shap.explainers._deep.deep_tf.op_handlers["FusedBatchNormV3"] = shap.explainers._deep.deep_tf.passthrough # batch norm を挟む場合、このコードが必要：https://github.com/shap/shap/issues/1406
+  #shap.explainers._deep.deep_tf.op_handlers["FusedBatchNormV3"] = shap.explainers._deep.deep_tf.passthrough # batch norm を挟む場合、このコードが必要：https://github.com/shap/shap/issues/1406
   explainer = shap.DeepExplainer(model=model, data=datasets)
-  shap_values = explainer.shap_values(datasets, check_additivity=False)
+  shap_values = explainer.shap_values(datasets[jja], check_additivity=False)
   shap_values = np.array(shap_values)
 
   print(shap_values.shape)
   print(shap_values.mean(axis=(0,1,2)))
-  np.savez(f'/home/maeda/data/bsiso_shap/torch_{(lead_time):03}day.npz', shap_values=shap_values)
+  np.savez(f'/home/maeda/data/bsiso_shap/torch_{(lead_time):03}day.npz', shap_values=shap_values, time=sup_rt)
