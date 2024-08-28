@@ -133,7 +133,7 @@ if __name__ == '__main__':
   device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
   
   #mode = 'mjo'
-  mode = 'bsiso'
+  #mode = 'bsiso'
   data = np.load('/home/maeda/data/bsiso_eeof/prepro_anomaly_8vals.npz')
 
   olr = data['olr'][80:,24:49,:]
@@ -160,14 +160,11 @@ if __name__ == '__main__':
 
   
   # bsiso index (eEOF) 読み込み
-  if mode == 'bsiso':
-    data_file = '/home/maeda/data/bsiso_eeof/bsiso_rt-PCs.npz'
-  elif mode == 'mjo':
-    data_file = '/home/maeda/data/bsiso_eeof/mjo_rt-PCs.npz'
-  PC      = np.load(data_file)['rt_PCs'][:,:2]
+  data_wpsh = np.load()
+  PC      = np.load(data_wpsh)['rt_PCs'][:,:2]
   sign    = np.array([-1, 1]).T
   PC_norm = sign * PC / PC.std(axis=0)[np.newaxis,:]
-  time2   = np.load(data_file)['time']
+  time2   = np.load(data_wpsh)['time']
   real_time2 = pd.to_datetime(time2, unit='h', origin=pd.Timestamp('1800-01-01')) # 時刻をdatetime型に変換
   print('PCs = ', PC_norm.shape)
   print('time PCs= ', time2.shape)
