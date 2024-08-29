@@ -159,10 +159,10 @@ if __name__ == '__main__':
   # monsoon index (EOF) 読み込み
   data_wpsh = np.load('/home/maeda/machine_learning/mt_monsoon/wnpsh_daily_index_mjjaso1979-2023.npz')
   print(data_wpsh.files)
-  PC      = data_wpsh['wnpsh_index'][:]
+  PC      = data_wpsh['wnpsh_index'][:-184]
   #sign    = np.array([-1, 1]).T
   #PC_norm = sign * PC / PC.std(axis=0)[np.newaxis,:]
-  time2   = data_wpsh['time'][:]
+  time2   = data_wpsh['time'][:-184]
   real_time2 = pd.to_datetime(time2) # 時刻をdatetime型に変換
   #print('PCs = ', PC_norm.shape)
   print('time PCs= ', time2.shape)
