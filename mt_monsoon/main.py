@@ -66,7 +66,7 @@ class Conv(nn.Module):
     def __init__(self):
         super().__init__()
         self.layer1 = nn.Sequential(
-          nn.Conv2d(8, 32, kernel_size=3, stride=2, padding=1),
+          nn.Conv2d(6, 32, kernel_size=3, stride=2, padding=1),
           nn.BatchNorm2d(32),
           nn.ReLU(),
           nn.Dropout(0.2))
@@ -131,9 +131,9 @@ if __name__ == '__main__':
 
   olr = data['olr'][80:,20:45,:]
   u850 = data['u850'][80:,20:45,:]
-  v850 = data['v850'][80:,20:45,:]
+  #v850 = data['v850'][80:,20:45,:]
   u200 = data['u200'][80:,20:45,:]
-  v200 = data['v200'][80:,20:45,:]
+  #v200 = data['v200'][80:,20:45,:]
   h850 = data['h850'][80:,20:45,:]
   pr_wtr = data['pr_wtr'][80:,20:45,:]
   sst = data['sst'][80:,20:45,:]
@@ -144,7 +144,7 @@ if __name__ == '__main__':
   real_time = pd.to_datetime(time, unit='h', origin=pd.Timestamp('1800-01-01')) # 時刻をdatetime型に変換
   mjjaso = real_time.month.isin([5, 6, 7, 8, 9, 10])
 
-  x = np.stack([olr, u850, v850, u200, v200, h850, pr_wtr, sst], 3)
+  x = np.stack([olr, u850, u200, h850, pr_wtr, sst], 3)
   x = x[mjjaso]
   x_n = np.zeros(x.shape)
   for i in range(x.shape[3]):
@@ -198,7 +198,7 @@ if __name__ == '__main__':
     # input data
     x_train = []
     x_test = []
-    for i in range(8):
+    for i in range(6):
       _x_train, _x_test = preprocess(x_n[:,:,:,i], rt, lead_time)
       x_train.append(_x_train)
       x_test.append(_x_test)
@@ -216,7 +216,7 @@ if __name__ == '__main__':
       print('Seed = ', seed)
       set_seed(seed)
       model = Conv().to(device)  
-      summary(model, (8, 25, 144))
+      summary(model, (6, 25, 144))
       es = EarlyStopping(patience=5, 
                          verbose=0,   # EalyStopping Counterの表示の有無（0/1）
                          path=f'/home/maeda/machine_learning/results/model/test.pth'
