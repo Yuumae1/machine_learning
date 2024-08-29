@@ -157,7 +157,7 @@ if __name__ == '__main__':
 
   
   # monsoon index (EOF) 読み込み
-  data_wpsh = np.load('./machine_learning/mt_monsoon/wnpsh_daily_index_mjjaso1979-2023.npz')
+  data_wpsh = np.load('/machine_learning/mt_monsoon/wnpsh_daily_index_mjjaso1979-2023.npz')
   print(data_wpsh.files)
   PC      = data_wpsh['wnpsh_index'][:]
   #sign    = np.array([-1, 1]).T
