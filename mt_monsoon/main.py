@@ -32,37 +32,33 @@ def normalization(data):
   return data_norm
 
 def indexing(lead_time):
-  output_shape = 2
-  rt = real_time2[:-lead_time-1]
-  t_data = PC_norm[lead_time:]
+  output_shape = 1
+  time_rs = time2.reshape(-1, 184)
+  rt = pd.to_datetime(time_rs[:,lead_time:].reshape(-1))
+  PC_rs = PC.reshape(-1,184)
+  t_data = PC_rs[:,lead_time:].reshape(-1)
   print(t_data.shape)
   idx = np.where((rt.year <= 2015))[0]
   t_train = t_data[idx]
   idx = np.where((rt.year > 2015))[0]
   t_test = t_data[idx]
+  
   print('t_train, t_test =', t_train.shape, t_test.shape)
   return rt, t_train, t_test, output_shape
 
 def preprocess(data, rt, lead_time):
-  ipt = data[10:-lead_time-1]
-  #ipt_lag5  = data[5:-lead_time-6]
-  #ipt_lag10 = data[:-lead_time-11]
+  print(data.shape)
+  ipt = data[:-lead_time-1]
+ 
   # =========
   # 訓練データの作成(通年データとする)
   idx1 = np.where((rt.year <= 2015))[0]
+  print(idx1.shape, ipt.shape)
   ipt_train = ipt[idx1]
-  #ipt_lag5_train = ipt_lag5[idx1]
-  #ipt_lag10_train = ipt_lag10[idx1]
-  #ipt_train = np.stack([ipt_lag0_train, ipt_lag5_train, ipt_lag10_train], 3)
-
+  
   # 検証データの作成
   idx2 = np.where((rt.year > 2015))[0]
   ipt_test = ipt[idx2]
-  #ipt_lag5_test = ipt_lag5[idx2]
-  #ipt_lag10_test = ipt_lag10[idx2]
-  #ipt_test = ipt[idx]
-  #ipt_test = np.concatenate([ipt_lag0_test, ipt_lag5_test, ipt_lag10_test], 1)
-  #ipt_test = np.stack([ipt_lag0_test, ipt_lag5_test, ipt_lag10_test], 3)
   return ipt_train, ipt_test
 
 
@@ -92,7 +88,7 @@ class Conv(nn.Module):
           nn.BatchNorm1d(128),
           nn.ReLU(),
           nn.Dropout(0.2))
-        self.fc2 = nn.Linear(128, 2)
+        self.fc2 = nn.Linear(128, 1)
         #self.fc1 = nn.Linear(128*4*19, 2)
         
     def forward(self, x):
@@ -149,9 +145,10 @@ if __name__ == '__main__':
   lon = data['lon']
   time = data['time'][80:]    # 射影後にデータが10日進むため、時刻の方を前進させておく
   real_time = pd.to_datetime(time, unit='h', origin=pd.Timestamp('1800-01-01')) # 時刻をdatetime型に変換
-
+  mjjaso = real_time.month.isin([5, 6, 7, 8, 9, 10])
 
   x = np.stack([olr, u850, v850, u200, v200, h850, pr_wtr, sst], 3)
+  x = x[mjjaso]
   x_n = np.zeros(x.shape)
   for i in range(x.shape[3]):
     x_n[:,:,:,i] = normalization(x[:,:,:,i])
@@ -159,16 +156,17 @@ if __name__ == '__main__':
 
 
   
-  # bsiso index (eEOF) 読み込み
-  data_wpsh = np.load()
-  PC      = np.load(data_wpsh)['rt_PCs'][:,:2]
-  sign    = np.array([-1, 1]).T
-  PC_norm = sign * PC / PC.std(axis=0)[np.newaxis,:]
-  time2   = np.load(data_wpsh)['time']
-  real_time2 = pd.to_datetime(time2, unit='h', origin=pd.Timestamp('1800-01-01')) # 時刻をdatetime型に変換
-  print('PCs = ', PC_norm.shape)
+  # monsoon index (EOF) 読み込み
+  data_wpsh = np.load('machine_learning/mt_monsoon/wnpsh_daily_index_mjjaso1979-2023.npz')
+  print(data_wpsh.files)
+  PC      = data_wpsh['wnpsh_index'][:]
+  #sign    = np.array([-1, 1]).T
+  #PC_norm = sign * PC / PC.std(axis=0)[np.newaxis,:]
+  time2   = data_wpsh['time'][:]
+  real_time2 = pd.to_datetime(time2) # 時刻をdatetime型に変換
+  #print('PCs = ', PC_norm.shape)
   print('time PCs= ', time2.shape)
-  print('real time PCs = ', real_time2[0], real_time2[-1])
+  #print('real time PCs = ', real_time2[0], real_time2[-1])
 
   
   '''
@@ -191,7 +189,7 @@ if __name__ == '__main__':
   
 
   #lt_box = [0, 5, 10, 15, 20, 25, 30, 35]
-  lt_box = np.arange(0, 31)
+  lt_box = np.arange(1, 2)
   
   for lead_time in lt_box:
     print('==== lead time : {} day ====='.format(lead_time))
@@ -209,8 +207,7 @@ if __name__ == '__main__':
     x_train = np.array(x_train).transpose(1, 0, 2, 3)
     x_test = np.array(x_test).transpose(1, 0, 2, 3)
     print('x_train, x_test =', x_train.shape, x_test.shape)
-    rt, t_train, t_test, output_shape = indexing(lead_time)
-    print('rt, t_train, t_test =', rt.shape, t_train.shape, t_test.shape)
+    
 
     batch_size = 128
     n_batches = x_train.shape[0] // batch_size
@@ -223,7 +220,7 @@ if __name__ == '__main__':
       summary(model, (8, 25, 144))
       es = EarlyStopping(patience=5, 
                          verbose=0,   # EalyStopping Counterの表示の有無（0/1）
-                         path=f'/home/maeda/machine_learning/results/model/kikuchi-single/8vals/model_{(lead_time):03}day/seed{(seed):03}.pth'
+                         path=f'/home/maeda/machine_learning/results/model/test.pth'
                         )
       loss_fn = nn.MSELoss()
       optimizer = optimizers.Adam(model.parameters(), lr=0.001)
@@ -264,11 +261,7 @@ if __name__ == '__main__':
       #learning_curve(history, lead_time)
       # model save
       torch.save(model.state_dict(), 'cnn_model.pth')
-      if mode == 'bsiso':
-        np.savez(f'/home/maeda/machine_learning/results/kikuchi-single/cor/8vals/{(lead_time):03}day/torch_seed{(seed):03}.npz', predict, t_test)
-        torch.save(model.state_dict(), f'/home/maeda/machine_learning/results/model/kikuchi-single/8vals/model_{(lead_time):03}day/seed{(seed):03}.pth')
-      elif mode == 'mjo':
-        np.savez(f'/home/maeda/machine_learning/results/kikuchi-8vals_mjo/cor/8vals/{(lead_time):03}day/torch_seed{(seed):03}.npz', predict, t_test)
-        torch.save(model.state_dict(), f'/home/maeda/machine_learning/results/model/kikuchi-8vals_mjo/8vals/model_{(lead_time):03}day/seed{(seed):03}.pth')
 
+      np.savez(f'/home/maeda/machine_learning/results/kikuchi-single/cor/test.npz', predict, t_test)
+      torch.save(model.state_dict(), f'/home/maeda/machine_learning/results/model/test.pth')
 print('==== Finish! ====')
