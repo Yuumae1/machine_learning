@@ -172,6 +172,7 @@ if __name__ == '__main__':
   def train_step(x, t):
       model.train()
       preds = model(x)
+      preds = preds.squeeze()
       loss = loss_fn(preds, t)
       optimizer.zero_grad()
       loss.backward()
@@ -181,6 +182,7 @@ if __name__ == '__main__':
   def test_step(x, t):
     model.eval()
     preds = model(x)
+    preds = preds.squeeze()
     loss = loss_fn(preds, t)
     return loss, preds
   
@@ -255,7 +257,7 @@ if __name__ == '__main__':
       print(predict.shape)
         
       #culc_cor(predict, t_test, lead_time)
-      print(np.corrcoef(predict[:,0], t_test[:,0])[0,1])
+      print(np.corrcoef(predict, t_test)[0,1])
       #learning_curve(history, lead_time)
       # model save
       torch.save(model.state_dict(), 'cnn_model.pth')
