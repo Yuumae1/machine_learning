@@ -172,7 +172,7 @@ if __name__ == '__main__':
   def train_step(x, t):
       model.train()
       preds = model(x)
-      preds = preds.unsqueeze(1)
+      preds = preds.squeeze(1)
       loss = loss_fn(preds, t)
       optimizer.zero_grad()
       loss.backward()
@@ -182,7 +182,7 @@ if __name__ == '__main__':
   def test_step(x, t):
     model.eval()
     preds = model(x)
-    preds = preds.unsqueeze(1)
+    preds = preds.squeeze(1)
     loss = loss_fn(preds, t)
     return loss, preds
   
@@ -212,7 +212,7 @@ if __name__ == '__main__':
     n_batches = x_train.shape[0] // batch_size
     epoch_num = 200
     
-    for seed in range(10):
+    for seed in range(1):
       print('Seed = ', seed)
       set_seed(seed)
       model = Conv().to(device)  
