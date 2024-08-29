@@ -129,16 +129,16 @@ if __name__ == '__main__':
   #mode = 'bsiso'
   data = np.load('/home/maeda/data/bsiso_eeof/prepro_anomaly_8vals.npz')
 
-  olr = data['olr'][80:,24:49,:]
-  u850 = data['u850'][80:,24:49,:]
-  v850 = data['v850'][80:,24:49,:]
-  u200 = data['u200'][80:,24:49,:]
-  v200 = data['v200'][80:,24:49,:]
-  h850 = data['h850'][80:,24:49,:]
-  pr_wtr = data['pr_wtr'][80:,24:49,:]
-  sst = data['sst'][80:,24:49,:]
+  olr = data['olr'][80:,20:45,:]
+  u850 = data['u850'][80:,20:45,:]
+  v850 = data['v850'][80:,20:45,:]
+  u200 = data['u200'][80:,20:45,:]
+  v200 = data['v200'][80:,20:45,:]
+  h850 = data['h850'][80:,20:45,:]
+  pr_wtr = data['pr_wtr'][80:,20:45,:]
+  sst = data['sst'][80:,20:45,:]
 
-  lat = data['lat'][24:49]
+  lat = data['lat'][20:45]
   lon = data['lon']
   time = data['time'][80:]    # 射影後にデータが10日進むため、時刻の方を前進させておく
   real_time = pd.to_datetime(time, unit='h', origin=pd.Timestamp('1800-01-01')) # 時刻をdatetime型に変換
@@ -172,7 +172,7 @@ if __name__ == '__main__':
   def train_step(x, t):
       model.train()
       preds = model(x)
-      preds = preds.squeeze()
+      preds = preds.unsqueeze(1)
       loss = loss_fn(preds, t)
       optimizer.zero_grad()
       loss.backward()
@@ -182,7 +182,7 @@ if __name__ == '__main__':
   def test_step(x, t):
     model.eval()
     preds = model(x)
-    preds = preds.squeeze()
+    preds = preds.unsqueeze(1)
     loss = loss_fn(preds, t)
     return loss, preds
   
