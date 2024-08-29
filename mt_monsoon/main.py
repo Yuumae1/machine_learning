@@ -47,15 +47,12 @@ def indexing(lead_time):
   return rt, t_train, t_test, output_shape
 
 def preprocess(data, rt, lead_time):
-  print(data.shape)
   ipt = data[:-lead_time-1]
  
   # =========
   # 訓練データの作成(通年データとする)
   idx1 = np.where((rt.year <= 2015))[0]
-  print(idx1.shape, ipt.shape)
   ipt_train = ipt[idx1]
-  
   # 検証データの作成
   idx2 = np.where((rt.year > 2015))[0]
   ipt_test = ipt[idx2]
@@ -257,7 +254,8 @@ if __name__ == '__main__':
       t_test  = t_test.cpu().detach().numpy()
       print(predict.shape)
         
-      culc_cor(predict, t_test, lead_time)
+      #culc_cor(predict, t_test, lead_time)
+      print(np.corrcoef(predict[:,0], t_test[:,0])[0,1])
       #learning_curve(history, lead_time)
       # model save
       torch.save(model.state_dict(), 'cnn_model.pth')
