@@ -127,7 +127,7 @@ if __name__ == '__main__':
   
   #mode = 'mjo'
   #mode = 'bsiso'
-  data = np.load('/home/maeda/data/bsiso_eeof/prepro_anomaly_8vals.npz')
+  data = np.load('/home/maeda/data/wnpsh_data/prepro_8vals.npz')
 
   olr = data['olr'][80:,20:45,:]
   u850 = data['u850'][80:,20:45,:]
