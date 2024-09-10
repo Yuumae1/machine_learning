@@ -124,9 +124,8 @@ if __name__ == '__main__':
   np.random.seed(123)
   torch.manual_seed(123)
   device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-  
-  #mode = 'mjo'
-  #mode = 'bsiso'
+
+  data = np.load('/home/maeda/data/bsiso_eeof/prepro_anomaly_8vals.npz')
   data = np.load('/home/maeda/data/bsiso_eeof/prepro_anomaly_8vals.npz')
 
   olr = data['olr'][80:,20:45,:]
