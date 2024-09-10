@@ -127,7 +127,7 @@ if __name__ == '__main__':
   
   #mode = 'mjo'
   #mode = 'bsiso'
-  data = np.load('/home/maeda/data/wnpsh_data/prepro_8vals.npz')
+  data = np.load('/home/maeda/data/bsiso_eeof/prepro_anomaly_8vals.npz')
 
   olr = data['olr'][80:,20:45,:]
   u850 = data['u850'][80:,20:45,:]
@@ -155,8 +155,14 @@ if __name__ == '__main__':
   
   # monsoon index (EOF) 読み込み
   data_wpsh = np.load('/home/maeda/machine_learning/mt_monsoon/wnpsh_daily_index_mjjaso1979-2023.npz')
+  data_bsiso = np.load('/home/maeda/data/bsiso_lee13/lee13_mveof.npz')
   print(data_wpsh.files)
+  print(data_bsiso.files)
   PC      = data_wpsh['wnpsh_index'][:-184]
+  bsiso_pc1 = data_bsiso['PCs'][:-184,0]
+  bsiso_pc2 = data_bsiso['PCs'][:-184,1]
+
+  bsiso_pcs = np.stack([bsiso_pc1, -bsiso_pc2], axis=1)
   #sign    = np.array([-1, 1]).T
   #PC_norm = sign * PC / PC.std(axis=0)[np.newaxis,:]
   time2   = data_wpsh['time'][:-184]

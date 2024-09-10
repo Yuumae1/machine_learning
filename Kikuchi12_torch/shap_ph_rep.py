@@ -7,17 +7,17 @@ import cartopy.crs as ccrs
 import cartopy.feature as cfeaturel
 import pandas as pd
 
-seed = [ 8, 15, 16,  0, 19,  0,  0, 19, 12,  7,
-         1, 19, 18, 17, 17,  2,  7, 16, 18, 16,
-        16, 15, 16, 16, 12, 13, 19, 19, 18, 18, 
-        18, 13, 15, 18, 18, 18]
+seed = [7, 4, 4, 2, 6, 6, 6, 2, 8, 8,
+        6, 6, 6, 6, 8, 6, 9, 1, 1, 1, 
+        1, 1, 1, 4, 8, 4, 7, 5, 4, 4,
+        8]
 
 def main(tt, pcs):
     print('tt, pcs = ', tt, pcs)
     lt_max = len(seed)
-    df  = np.load(f'/work/gi55/i55233/data/results/bsiso_shap/jja_{(tt):03}day.npz')
-    df2 = np.load(f'/work/gi55/i55233/data/machine_learning/results/kikuchi-8vals_v1/cor/8vals/{(tt):03}day/seed{(seed[tt]):03}.npz')
-    df3 = np.load(f'/work/gi55/i55233/data/machine_learning/results/kikuchi-8vals_v1/cor/8vals/000day/seed{(seed[0]):03}.npz')
+    df  = np.load(f'/work/gi55/i55233/data/results/bsiso_shap/torch_{(tt):03}day.npz')
+    df2 = np.load(f'/work/gi55/i55233/data/machine_learning/results/kikuchi-single/cor/8vals/{(tt):03}day/torch_seed{(seed[tt]):03}.npz')
+    df3 = np.load(f'/work/gi55/i55233/data/machine_learning/results/kikuchi-single/cor/8vals/000day/torch_seed{(seed[0]):03}.npz')
 
     shap_data = df['shap_values']
     pred = df2['arr_0'][:-1-(lt_max-tt)] # 対応する pred の値
@@ -31,7 +31,7 @@ def main(tt, pcs):
     
     shap_val_abs = np.zeros((shap_data.shape[0], shap_data.shape[1], 8))
     for j in range(8):
-        shap_val_abs[:,:,j] = shap_data[:,:,:,:,j*3:(j+1)*3].sum(axis=(2,3,4))
+        shap_val_abs[:,:,j] = shap_data[:,:,j,:,:].sum(axis=(2,3))
     
     
     # 20150101-20231231 のデータを取得
@@ -60,10 +60,11 @@ def main(tt, pcs):
                 shap_bin[i,j] = np.nan
                 bin_count[i,j] = np.nan
     
-    cnt_rate = shap_bin / shap_bin.sum(axis=2)[:,:,np.newaxis]
+    #cnt_rate = shap_bin / shap_bin.sum(axis=2)[:,:,np.newaxis]
+    cnt_rate = shap_bin
     
     # 3 * 3 のフェーズ分布を描画
-    val = ['OLR', 'U850', 'U200', 'V850', 'V200', 'H850', 'PW', 'SST', 'Count']
+    val = ['OLR', 'U850', 'V850', 'U200', 'V200', 'H850', 'PW', 'SST', 'Count']
     fig = plt.figure(figsize=(16,16))
     for i in range(9):
         ax = fig.add_subplot(3,3,i+1)
@@ -86,7 +87,8 @@ def main(tt, pcs):
 
         xi, yi = np.meshgrid(bin_x, bin_y)
         if i < 8:
-            pcm1 = ax.pcolormesh(xi, yi, cnt_rate[:,:,i], cmap='YlOrRd', vmin=0, vmax=0.4)
+            #pcm1 = ax.pcolormesh(xi, yi, cnt_rate[:,:,i], cmap='YlOrRd', vmin=0., vmax=0.4)
+            pcm1 = ax.pcolormesh(xi, yi, cnt_rate[:,:,i], cmap='bwr', vmin=-0.4, vmax=0.4)
         else:
             pcm2 = ax.pcolormesh(xi, yi, bin_count, cmap='BuPu', vmin=0, vmax=30)
 
@@ -111,12 +113,12 @@ def main(tt, pcs):
     cbar_ax2.set_ylabel('Count', fontsize=15)
     cbar_ax2.tick_params(labelsize=12)
     # save
-    plt.savefig(f'/work/gi55/i55233/data/results/bsiso_shap/ph_cnt/phase_rep_{tt:03}_pc{pcs}.png', bbox_inches='tight')
+    plt.savefig(f'/work/gi55/i55233/data/results/bsiso_shap/ph_cnt/torch_phase_rep-abs_{tt:03}_pc{pcs}.png', bbox_inches='tight')
     plt.close()
 
 if __name__ == '__main__':
     
-    for tt in range(0,36):
+    for tt in range(0,31,5):
         for pcs in range(2):
             main(tt, pcs)
     
