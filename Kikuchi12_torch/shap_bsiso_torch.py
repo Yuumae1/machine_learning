@@ -132,42 +132,44 @@ seed = [7, 4, 4, 2, 6, 6, 6, 2, 8, 8,
 lt_box = np.arange(0,31,5)
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-for lead_time in lt_box:
+for seed in range(10):
+  for lead_time in lt_box:
 
-  print('==== Deep Lift calculation :lead time = {} day ====='.format(lead_time))
+    print('==== Deep Lift calculation :lead time = {} day ====='.format(lead_time))
 
-  data, rt, sup_train, sup_test, output_shape, sup_rt = indexing(lead_time) 
+    data, rt, sup_train, sup_test, output_shape, sup_rt = indexing(lead_time) 
 
-  olr_ipt_test = preprocess(olr_norm, rt, lead_time)
-  u850_ipt_test = preprocess(u850_norm, rt, lead_time)
-  v850_ipt_test = preprocess(v850_norm, rt, lead_time)
-  u200_ipt_test = preprocess(u200_norm, rt, lead_time)
-  v200_ipt_test = preprocess(v200_norm, rt, lead_time)
-  h850_ipt_test = preprocess(h850_norm, rt, lead_time)
-  pr_wtr_ipt_test = preprocess(pr_wtr_norm, rt, lead_time)
-  sst_ipt_test = preprocess(sst_norm, rt, lead_time)
+    olr_ipt_test = preprocess(olr_norm, rt, lead_time)
+    u850_ipt_test = preprocess(u850_norm, rt, lead_time)
+    v850_ipt_test = preprocess(v850_norm, rt, lead_time)
+    u200_ipt_test = preprocess(u200_norm, rt, lead_time)
+    v200_ipt_test = preprocess(v200_norm, rt, lead_time)
+    h850_ipt_test = preprocess(h850_norm, rt, lead_time)
+    pr_wtr_ipt_test = preprocess(pr_wtr_norm, rt, lead_time)
+    sst_ipt_test = preprocess(sst_norm, rt, lead_time)
 
-  ipt_test  = np.stack([olr_ipt_test, u850_ipt_test,  u200_ipt_test,
-                        v850_ipt_test, v200_ipt_test, h850_ipt_test, 
-                        pr_wtr_ipt_test, sst_ipt_test], 3)
-  print(ipt_test.shape)
-  # jja のみを渡す
-  jja = np.isin(sup_rt.month, [6, 7, 8])
-  datasets = ipt_test.transpose(0,3,1,2)
-  datasets = torch.tensor(datasets, dtype=torch.float32).to(device)
-  print(datasets.shape)
+    ipt_test  = np.stack([olr_ipt_test, u850_ipt_test,  u200_ipt_test,
+                          v850_ipt_test, v200_ipt_test, h850_ipt_test, 
+                          pr_wtr_ipt_test, sst_ipt_test], 3)
+    print(ipt_test.shape)
+    # jja のみを渡す
+    jja = np.isin(sup_rt.month, [6, 7, 8])
+    datasets = ipt_test.transpose(0,3,1,2)
+    datasets = torch.tensor(datasets, dtype=torch.float32).to(device)
+    print(datasets.shape)
 
-  model_path = f'/home/maeda/machine_learning/results/model/kikuchi-single/8vals/model_{(lead_time):03}day/seed{(seed[lead_time]):03}.pth'
-  model = Conv().to(device)
-  model.load_state_dict(torch.load(model_path))
-  model.eval()
-  
-  # Shap Calculation
-  #shap.explainers._deep.deep_tf.op_handlers["FusedBatchNormV3"] = shap.explainers._deep.deep_tf.passthrough # batch norm を挟む場合、このコードが必要：https://github.com/shap/shap/issues/1406
-  explainer = shap.DeepExplainer(model=model, data=datasets)
-  shap_values = explainer.shap_values(datasets[jja], check_additivity=False)
-  shap_values = np.array(shap_values)
+    model_path = f'/home/maeda/machine_learning/results/model/kikuchi-single/8vals/model_{(lead_time):03}day/seed{(seed[lead_time]):03}.pth'
+    model = Conv().to(device)
+    model.load_state_dict(torch.load(model_path))
+    model.eval()
+    
+    # Shap Calculation
+    #shap.explainers._deep.deep_tf.op_handlers["FusedBatchNormV3"] = shap.explainers._deep.deep_tf.passthrough # batch norm を挟む場合、このコードが必要：https://github.com/shap/shap/issues/1406
+    explainer = shap.DeepExplainer(model=model, data=datasets)
+    #shap_values = explainer.shap_values(datasets[jja], check_additivity=False)
+    shap_values = explainer.shap_values(datasets, check_additivity=False)
+    shap_values = np.array(shap_values)
 
-  print(shap_values.shape)
-  print(shap_values.mean(axis=(0,1,2)))
-  np.savez(f'/home/maeda/data/bsiso_shap/torch_{(lead_time):03}day.npz', shap_values=shap_values, time=sup_rt)
+    print(shap_values.shape)
+    print(shap_values.mean(axis=(0,1,2)))
+    np.savez(f'/home/maeda/data/bsiso_shap/torch_{(lead_time):03}day{(seed):03}-all.npz', shap_values=shap_values, time=sup_rt)
