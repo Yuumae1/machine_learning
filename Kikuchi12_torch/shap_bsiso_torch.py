@@ -172,4 +172,4 @@ for s in range(10):
 
     print(shap_values.shape)
     print(shap_values.mean(axis=(0,1,2)))
-    np.savez(f'/home/maeda/data/bsiso_shap/torch_{(lead_time):03}day{(seed):03}-all.npz', shap_values=shap_values, time=sup_rt)
+    np.savez(f'/home/maeda/data/bsiso_shap/torch_{(lead_time):03}day{(s):03}-all.npz', shap_values=shap_values, time=sup_rt)
