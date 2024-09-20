@@ -15,48 +15,44 @@ from torchsummary import summary
 
 
 def set_seed(seed):
-  random.seed(seed)
-  np.random.seed(seed)
-  torch.manual_seed(seed)
-  torch.cuda.manual_seed(seed)
-  torch.cuda.manual_seed_all(seed)
-  torch.backends.cudnn.deterministic = True
-  torch.backends.cudnn.benchmark = False
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
 
 def normalization(data):
-  data_mean = np.mean(data, axis=0)
-  data_std  = np.std(data, axis=0)
-  data_norm = (data - data_mean) / data_std
-  data_norm = np.nan_to_num(data_norm, nan=0) # 欠損値(nan)を0で置換
-  del data_mean, data_std
-  return data_norm
+    data_mean = np.mean(data, axis=0)
+    data_std  = np.std(data, axis=0)
+    data_norm = (data - data_mean) / data_std
+    data_norm = np.nan_to_num(data_norm, nan=0) # 欠損値(nan)を0で置換
+    del data_mean, data_std
+    return data_norm  
 
 def indexing(lead_time):
-  output_shape = 1
-  time_rs = time2.reshape(-1, 184)
-  rt = pd.to_datetime(time_rs[:,lead_time:].reshape(-1))
-  PC_rs = PC.reshape(-1,184)
-  t_data = PC_rs[:,lead_time:].reshape(-1)
-  print(t_data.shape)
-  idx = np.where((rt.year <= 2015))[0]
-  t_train = t_data[idx]
-  idx = np.where((rt.year > 2015))[0]
-  t_test = t_data[idx]
-  
-  print('t_train, t_test =', t_train.shape, t_test.shape)
-  return rt, t_train, t_test, output_shape
+    output_shape = 1
+    time_rs = time2.reshape(-1, 184)
+    rt = pd.to_datetime(time_rs[:,lead_time:].reshape(-1))
+    PC_rs = PC.reshape(-1,184)
+    t_data = PC_rs[:,lead_time:].reshape(-1)
+    idx = np.where((rt.year <= 2015))[0]
+    t_train = t_data[idx]
+    idx = np.where((rt.year > 2015))[0]
+    t_test = t_data[idx]
+    print('t_train, t_test =', t_train.shape, t_test.shape)
+    return rt, t_train, t_test, output_shape                
 
 def preprocess(data, rt, lead_time):
-  ipt = data[:-lead_time-1]
- 
-  # =========
-  # 訓練データの作成(通年データとする)
-  idx1 = np.where((rt.year <= 2015))[0]
-  ipt_train = ipt[idx1]
-  # 検証データの作成
-  idx2 = np.where((rt.year > 2015))[0]
-  ipt_test = ipt[idx2]
-  return ipt_train, ipt_test
+    ipt = data[:-lead_time-1]
+    # 訓練データの作成(通年データとする)
+    idx1 = np.where((rt.year <= 2015))[0]
+    ipt_train = ipt[idx1]
+    # 検証データの作成
+    idx2 = np.where((rt.year > 2015))[0]
+    ipt_test = ipt[idx2]
+    return ipt_train, ipt_test
 
 
 '''
@@ -85,6 +81,7 @@ class Conv(nn.Module):
           nn.BatchNorm1d(128),
           nn.ReLU(),
           nn.Dropout(0.2))
+        self.lstml = nn.LSTM(128, 128, batch_first=True)
         self.fc2 = nn.Linear(128, 1)
         #self.fc1 = nn.Linear(128*4*19, 2)
         
@@ -99,35 +96,38 @@ class Conv(nn.Module):
 
 
 def culc_cor(predict, y_test, lead_time):
-  cor = (np.sum(predict[:,0] * y_test[:,0], axis=0) + np.sum(predict[:,1] * y_test[:,1], axis=0)) / \
-          (np.sqrt(np.sum(predict[:,0] ** 2 + predict[:,1] ** 2, axis=0)) * np.sqrt(np.sum(y_test[:,0] ** 2 + y_test[:,1] ** 2, axis=0)))
-  print('lead time {} day = '.format(lead_time), cor)
+    cor = (np.sum(predict[:,0] * y_test[:,0], axis=0) + np.sum(predict[:,1] * y_test[:,1], axis=0)) / \
+            (np.sqrt(np.sum(predict[:,0] ** 2 + predict[:,1] ** 2, axis=0)) * np.sqrt(np.sum(y_test[:,0] ** 2 + y_test[:,1] ** 2, axis=0)))
+    print('lead time {} day = '.format(lead_time), cor)
 
 def learning_curve(history, lead_time):
-  plt.figure(figsize=(8, 6))
-  plt.plot(history.history['loss'], label='Training Loss')
-  plt.plot(history.history['val_loss'], label='Validation Loss')    #Validation loss : 精度検証データにおける損失
-  plt.xlim(0, 200)
-  plt.ylim(0, 1.)
-  plt.xlabel('Epoch')
-  plt.ylabel('Loss')
-  plt.title('Loss vs. Epoch   Lead Time = ' + str(lead_time) + 'days')
-  plt.legend()
-  plt.savefig(f'/home/maeda/machine_learning/results/kikuchi-8vals_v1/learning_curve/8vals/{(lead_time):03}day.png')
-  plt.close()
+    plt.figure(figsize=(8, 6))
+    plt.plot(history.history['loss'], label='Training Loss')
+    plt.plot(history.history['val_loss'], label='Validation Loss')    #Validation loss : 精度検証データにおける損失
+    plt.xlim(0, 200)
+    plt.ylim(0, 1.)
+    plt.xlabel('Epoch')
+    plt.ylabel('Loss')
+    plt.title('Loss vs. Epoch   Lead Time = ' + str(lead_time) + 'days')
+    plt.legend()
+    plt.savefig(f'/home/maeda/machine_learning/results/kikuchi-8vals_v1/learning_curve/8vals/{(lead_time):03}day.png')
+    plt.close()
 
 
 '''
 main program
 '''
 if __name__ == '__main__':
+  #is_debug = False
+  is_debug = True
+  if is_debug:
+    b_path = '/work/gi55/i55233/data/results/'
+  else:
+    b_path = '/home/maeda/data/'
   np.random.seed(123)
   torch.manual_seed(123)
   device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-
-  data = np.load('/home/maeda/data/bsiso_eeof/prepro_anomaly_8vals.npz')
-  data = np.load('/home/maeda/data/bsiso_eeof/prepro_anomaly_8vals.npz')
-
+  data = np.load(b_path + 'bsiso_eeof/prepro_anomaly_8vals.npz')
   olr = data['olr'][80:,20:45,:]
   u850 = data['u850'][80:,20:45,:]
   #v850 = data['v850'][80:,20:45,:]
@@ -136,7 +136,6 @@ if __name__ == '__main__':
   h850 = data['h850'][80:,20:45,:]
   pr_wtr = data['pr_wtr'][80:,20:45,:]
   sst = data['sst'][80:,20:45,:]
-
   lat = data['lat'][20:45]
   lon = data['lon']
   time = data['time'][80:]    # 射影後にデータが10日進むため、時刻の方を前進させておく
@@ -149,12 +148,10 @@ if __name__ == '__main__':
   for i in range(x.shape[3]):
     x_n[:,:,:,i] = normalization(x[:,:,:,i])
   print('x_n = ', x_n.shape)  
-
-
   
   # monsoon index (EOF) 読み込み
-  data_wpsh = np.load('/home/maeda/machine_learning/mt_monsoon/wnpsh_daily_index_mjjaso1979-2023.npz')
-  data_bsiso = np.load('/home/maeda/data/bsiso_lee13/lee13_mveof.npz')
+  data_wpsh = np.load('/work/gi55/i55233/data/machine_learning/mt_monsoon/wnpsh_daily_index_mjjaso1979-2023.npz')
+  data_bsiso = np.load('/work/gi55/i55233/data/results/bsiso_lee13/lee13_mveof.npz')
   print(data_wpsh.files)
   print(data_bsiso.files)
   PC      = data_wpsh['wnpsh_index'][:-184]
@@ -166,7 +163,6 @@ if __name__ == '__main__':
   #PC_norm = sign * PC / PC.std(axis=0)[np.newaxis,:]
   time2   = data_wpsh['time'][:-184]
   real_time2 = pd.to_datetime(time2) # 時刻をdatetime型に変換
-  #print('PCs = ', PC_norm.shape)
   print('time PCs= ', time2.shape)
   #print('real time PCs = ', real_time2[0], real_time2[-1])
 
@@ -185,11 +181,11 @@ if __name__ == '__main__':
       return loss, preds
     
   def test_step(x, t):
-    model.eval()
-    preds = model(x)
-    preds = preds.squeeze(1)
-    loss = loss_fn(preds, t)
-    return loss, preds
+      model.eval()
+      preds = model(x)
+      preds = preds.squeeze(1)
+      loss = loss_fn(preds, t)
+      return loss, preds
   
 
   #lt_box = [0, 5, 10, 15, 20, 25, 30, 35]
@@ -224,7 +220,7 @@ if __name__ == '__main__':
       summary(model, (6, 25, 144))
       es = EarlyStopping(patience=5, 
                          verbose=0,   # EalyStopping Counterの表示の有無（0/1）
-                         path=f'/home/maeda/machine_learning/results/model/test.pth'
+                         path=f'/work/gi55/i55233/data/machine_learning/results/model/test.pth'
                         )
       loss_fn = nn.MSELoss()
       optimizer = optimizers.Adam(model.parameters(), lr=0.001)
@@ -267,6 +263,6 @@ if __name__ == '__main__':
       # model save
       torch.save(model.state_dict(), 'cnn_model.pth')
 
-      np.savez(f'/home/maeda/machine_learning/results/kikuchi-single/cor/test.npz', predict, t_test)
-      torch.save(model.state_dict(), f'/home/maeda/machine_learning/results/model/test.pth')
+      np.savez(b_path + f'machine_learning/results/kikuchi-single/cor/test.npz', predict, t_test)
+      torch.save(model.state_dict(), b_path + f'machine_learning/results/model/test.pth')
 print('==== Finish! ====')
