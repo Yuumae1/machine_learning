@@ -81,8 +81,8 @@ class Conv(nn.Module):
           nn.BatchNorm1d(64),
           nn.ReLU(),
           nn.Dropout(0.2))
-        self.lstml = nn.LSTM(64, 16, batch_first=True)
-        self.fc2 = nn.Linear(16, 1)
+        self.lstml = nn.LSTM(64, 64, batch_first=True, dropout=0.2)
+        self.fc2 = nn.Linear(64, 1)
         #self.fc1 = nn.Linear(128*4*19, 2)
         
     def forward(self, x):
@@ -91,6 +91,7 @@ class Conv(nn.Module):
         x = self.layer3(x)
         x = x.reshape(x.size(0), -1)
         x = self.fc1(x)
+        x = self.lstml(x)
         x = self.fc2(x)
         return x
 
